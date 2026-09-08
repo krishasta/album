@@ -360,12 +360,21 @@ function App() {
       </nav>
 
       <main className="app-shell">
+        {/* Background Ambient Light Orbs */}
+        <div className="ambient-glow glow-1" aria-hidden="true"></div>
+        <div className="ambient-glow glow-2" aria-hidden="true"></div>
+        <div className="ambient-glow glow-3" aria-hidden="true"></div>
+
         {/* Section 1: Home / Hero */}
         <section id="home" className="hero-section">
           <div className="hero-content">
-            <p className="eyebrow hero-eyebrow">Creative Studio & Visual Archive</p>
+            <div className="hero-eyebrow-wrapper">
+              <span className="eyebrow hero-eyebrow">
+                <span className="pulse-dot"></span> Creative Studio & Visual Archive
+              </span>
+            </div>
             <h1 className="hero-title">
-              Crafting Timeless Visual Stories For Every Milestone.
+              Crafting Timeless <span className="text-gradient">Visual Stories</span> For Every Milestone.
             </h1>
             <p className="hero-desc">
               From sacred marriage muhurthams and grand temple festivals to vibrant birthday celebrations, 
@@ -377,31 +386,35 @@ function App() {
                 className="btn-primary" 
                 onClick={() => handleNavClick('services')}
               >
-                Explore Services <span>↓</span>
+                <span>Explore Services</span> <span className="btn-arrow">↓</span>
               </button>
               <button 
                 type="button" 
                 className="btn-secondary" 
                 onClick={() => handleNavClick('gallery')}
               >
-                View Client Gallery <span>↗</span>
+                <span>View Client Gallery</span> <span className="btn-arrow">↗</span>
               </button>
             </div>
             
             <div className="hero-stats-strip">
               <div className="stat-pill">
+                <div className="stat-glow"></div>
                 <strong>500+</strong>
                 <span>Events Documented</span>
               </div>
               <div className="stat-pill">
+                <div className="stat-glow"></div>
                 <strong>10+</strong>
                 <span>Years of Artistry</span>
               </div>
               <div className="stat-pill">
+                <div className="stat-glow"></div>
                 <strong>100%</strong>
                 <span>Delighted Clients</span>
               </div>
               <div className="stat-pill">
+                <div className="stat-glow"></div>
                 <strong>4K & Drone</strong>
                 <span>Ultra-HD Coverage</span>
               </div>
@@ -423,8 +436,11 @@ function App() {
           <div className="services-grid">
             {servicesData.map((svc) => (
               <div className="service-card" key={svc.id}>
+                <div className="service-card-glow" aria-hidden="true"></div>
                 <div className="service-card-top">
-                  <span className="service-icon" role="img" aria-hidden="true">{svc.icon}</span>
+                  <div className="service-icon-wrapper">
+                    <span className="service-icon" role="img" aria-hidden="true">{svc.icon}</span>
+                  </div>
                   <span className="service-category-badge">{svc.category}</span>
                 </div>
                 <h3 className="service-name">{svc.title}</h3>
