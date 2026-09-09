@@ -497,7 +497,7 @@ function App() {
     // Automatically trigger WhatsApp in new tab
     try {
       window.open(whatsappUrl, '_blank')
-    } catch (_) {}
+    } catch (_) { }
 
     // Optional background POST to Google Apps Script webhook
     if (appsScriptUrl) {
@@ -512,8 +512,8 @@ function App() {
             recipient: 'vashokphotos@gmail.com',
             submittedAt: new Date().toISOString(),
           }),
-        }).catch(() => {})
-      } catch (_) {}
+        }).catch(() => { })
+      } catch (_) { }
     }
   }
 
@@ -1118,7 +1118,7 @@ function App() {
                         id="contact-name"
                         name="name"
                         required
-                        placeholder="e.g. Anand Kumar"
+                        placeholder="e.g. Krish"
                         value={contactData.name}
                         onChange={handleContactChange}
                       />
@@ -1145,7 +1145,7 @@ function App() {
                         id="contact-email"
                         name="email"
                         required
-                        placeholder="anand@example.com"
+                        placeholder="krish@example.com"
                         value={contactData.email}
                         onChange={handleContactChange}
                       />
