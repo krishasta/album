@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import CardAlbum from './components/cardalbum.jsx'
 import MainAlbum from './components/mainalbum.jsx'
+import PhotographerWidget from './components/PhotographerWidget.jsx'
 
 const albumCount = 10
 const photosPerAlbum = 10
@@ -88,13 +89,185 @@ const servicesData = [
     features: ['Multi-Cam HD/4K Webcast', 'Lag-Free Global Streaming', 'Crisp Audio & Mixing', 'Drone Cinematic Coverage'],
     icon: '🎥',
   },
+  {
+    id: 'csr-documentary',
+    title: 'CSR & Community Documentary',
+    category: 'Social Impact Storytelling',
+    description: 'Specialized documentary photography & cinematography for corporate CSR initiatives — from Gethaikadu tribal welfare and Anganwadi model upgrades to green drives at Semmozhi Poonga Coimbatore.',
+    features: ['Field Impact Reports & Archives', 'Drone Aerial Site Documentation', 'High-Res Annual Report Imagery', 'Corporate Foundation Video Stories'],
+    icon: '🤝',
+  },
 ]
+
+const csrProjectsData = [
+  {
+    id: 'gethaikadu-tribal',
+    title: 'Gethaikadu Tribal Development CSR',
+    location: 'Gethaikadu Settlements, Western Ghats',
+    category: 'Tribal Community Empowerment',
+    badge: 'Tribal Welfare',
+    badgeColor: '#16a34a',
+    icon: '🌿',
+    description: 'Comprehensive visual documentation of indigenous community health camps, tribal education initiatives, clean water access, and livelihood empowerment in Gethaikadu tribal settlements.',
+    highlights: [
+      'Field Healthcare & Nutrition Camps',
+      'Tribal Youth Education Support',
+      'Indigenous Cultural Heritage Archives',
+      'Corporate Donor Impact Photo Reports',
+    ],
+    stats: { impact: '1,200+ Beneficiaries', coverage: 'Full Documentary & Aerials' },
+  },
+  {
+    id: 'semmozhi-poonga',
+    title: 'CSR at Semmozhi Poonga Coimbatore',
+    location: 'Coimbatore, Tamil Nadu',
+    category: 'Eco-Restoration & Green Heritage',
+    badge: 'Urban Biodiversity',
+    badgeColor: '#059669',
+    icon: '🌳',
+    description: 'In-depth visual documentation of ecological conservation, botanical park development, corporate tree plantation drives, and public environmental heritage at Semmozhi Poonga.',
+    highlights: [
+      'Eco-Habitat Restoration Documentation',
+      'Corporate Greening & Plantation Drives',
+      'Public Environmental Education Archives',
+      '4K Cinematic Drone Aerial Mapping',
+    ],
+    stats: { impact: '50+ Acres Green Space', coverage: '4K Drone & Time-lapse' },
+  },
+  {
+    id: 'anganwadi-model',
+    title: 'Anganwadi Model Project CSR',
+    location: 'Model Centers & Rural Anganwadis',
+    category: 'Early Childhood Care & Infrastructure',
+    badge: 'Childhood Nutrition',
+    badgeColor: '#0284c7',
+    icon: '🏫',
+    description: 'Capturing the transformation of model Anganwadis — smart learning spaces, child nutrition drives, hygienic sanitation upgrades, and mother & child healthcare milestone stories.',
+    highlights: [
+      'Smart Classroom & Play Infrastructure',
+      'Child Nutrition & Growth Monitoring',
+      'Mother & Child Wellness Documentation',
+      'Comprehensive CSR Audit Photo Story',
+    ],
+    stats: { impact: '30+ Model Centers', coverage: 'Multi-Location Field Coverage' },
+  },
+]
+
+const customerReviewsData = [
+  // 1. Primary Institutional & Corporate Clients
+  {
+    id: 'school-1',
+    category: 'institutions',
+    name: 'Gopal Naidu School',
+    event: 'Annual Day Celebrations & Campus Events',
+    location: 'Coimbatore, Tamil Nadu',
+    rating: 5,
+    image: '/images/customer1.jpeg',
+    fallbackInitials: 'GN',
+    review: 'Anbudan Photos captured our annual sports meets, student cultural milestones, and academic awards with immense precision and elegance. Every moment was preserved with top-tier cinematography.',
+    tag: 'Educational Institution',
+  },
+  {
+    id: 'corp-1',
+    category: 'institutions',
+    name: 'Windplus Pvt Ltd',
+    event: 'Corporate Summits, CSR & Brand Shoots',
+    location: 'Coimbatore, Tamil Nadu',
+    rating: 5,
+    image: '/images/customer2.jpeg',
+    fallbackInitials: 'WP',
+    review: 'Windplus has collaborated with Anbudan Photos for executive events, leadership conferences, and CSR field documentation. Their work ethic and crisp 4K visual storytelling add immense value to our brand.',
+    tag: 'Corporate Enterprise',
+  },
+  {
+    id: 'tech-1',
+    category: 'institutions',
+    name: 'Digital-bee Software Solutions',
+    event: 'Tech Summits, Product Launches & Gala',
+    location: 'Tamil Nadu',
+    rating: 5,
+    image: '/images/customer3.jpeg',
+    fallbackInitials: 'DB',
+    review: 'Exceptional photography and video coverage for our corporate product releases and annual team summits. Dynamic, modern, and deliver crystal-clear executive headshots and stage highlights.',
+    tag: 'Tech Enterprise',
+  },
+  // 2. Temples & Spiritual Devasthanams
+  {
+    id: 'temple-1',
+    category: 'temples',
+    name: 'Sri Jaganatha Perumal ThiruKovil',
+    event: 'Brahmotsavam & Sacred Deity Alankarams',
+    location: 'Tamil Nadu',
+    rating: 5,
+    image: '/images/temple1.png',
+    fallbackInitials: 'JP',
+    review: 'Their reverent and unobtrusive coverage of our temple Brahmotsavam and sacred deity alankarams was conducted with utmost spiritual devotion. The photo clarity in traditional low lighting is remarkable.',
+    tag: 'Temple Devasthanam',
+  },
+  {
+    id: 'temple-2',
+    category: 'temples',
+    name: 'Sri Sithammal Sri Polammal Kovil',
+    event: 'Maha Kumbhabhishekham & Annadhanam',
+    location: 'Thandukkarampalayam, Tamil Nadu',
+    rating: 5,
+    image: '/images/temple2.png',
+    fallbackInitials: 'SP',
+    review: 'The visual archives created for our Thandukkarampalayam Kovil Kumbhabhishekham captured the divine energy and massive crowd gatherings flawlessly. Anbudan Photos is our trusted visual chronicler.',
+    tag: 'Spiritual Shrine Trust',
+  },
+  {
+    id: 'temple-3',
+    category: 'temples',
+    name: 'Sri Srinivasa Perumal Temple',
+    event: 'Vaigunda Ekadasi & Garuda Seva',
+    location: 'Pappanaickenpalayam, Coimbatore',
+    rating: 5,
+    image: '/images/temple3.png',
+    fallbackInitials: 'SP',
+    review: 'Exceptional live webcasting and multi-camera documentation of our Garuda Seva and holy deity processions in Pappanaickenpalayam. Devotees across the world praised the crystalline picture clarity.',
+    tag: 'Perumal Devasthanam',
+  },
+  {
+    id: 'temple-4',
+    category: 'temples',
+    name: 'Karivaradharaja Perumal Temple',
+    event: 'Annual Temple Festival & Theerthavari',
+    location: 'Tamil Nadu',
+    rating: 5,
+    image: '/images/temple4.png',
+    fallbackInitials: 'KP',
+    review: 'Capturing the divine majesty of Karivaradharaja Perumal with cinema-grade lenses and drone perspectives was a blessing. The handcrafted velvet photo archives were handed over promptly to our board.',
+    tag: 'Heritage Temple Trust',
+  },
+]
+
+function ClientAvatar({ src, alt, fallbackInitials }) {
+  const [imgError, setImgError] = useState(false)
+  if (imgError || !src) {
+    return (
+      <div className="client-avatar-fallback">
+        <span className="client-initials">{fallbackInitials}</span>
+        <span className="client-avatar-cam-badge">📸</span>
+      </div>
+    )
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="client-avatar-img"
+      onError={() => setImgError(true)}
+    />
+  )
+}
 
 function App() {
   const [albums, setAlbums] = useState(initialAlbums)
   const [activeAlbum, setActiveAlbum] = useState(null)
   const [driveStatus, setDriveStatus] = useState('loading')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [customerFilter, setCustomerFilter] = useState('all')
   const [contactSubmitted, setContactSubmitted] = useState(false)
   const [contactData, setContactData] = useState({
     name: '',
@@ -283,20 +456,65 @@ function App() {
     })
   }
 
+  const [submittedInquiry, setSubmittedInquiry] = useState(null)
+
   const handleContactSubmit = (e) => {
     e.preventDefault()
+
+    // 1. Format professional WhatsApp message
+    const waText = `📸 *NEW BOOKING INQUIRY - ANBUDAN PHOTOS*\n\n` +
+      `👤 *Client Name:* ${contactData.name}\n` +
+      `📞 *Phone / WhatsApp:* ${contactData.phone}\n` +
+      `✉️ *Email:* ${contactData.email}\n` +
+      `🏷️ *Service Requested:* ${contactData.service}\n` +
+      `📅 *Event Date:* ${contactData.eventDate || 'Tentative / To be discussed'}\n` +
+      `📝 *Event Details / Notes:* ${contactData.message || 'No additional notes provided'}\n\n` +
+      `_Sent via Anbudan Photos website inquiry form_`
+
+    const whatsappUrl = `https://wa.me/919994499238?text=${encodeURIComponent(waText)}`
+
+    // 2. Format mailto fallback for direct email composition
+    const mailSubject = `[New Inquiry] ${contactData.name} - ${contactData.service}`
+    const mailBody = `Hello Anbudan Photos Studio,\n\nI would like to inquire about booking photography/videography services.\n\n` +
+      `Full Name: ${contactData.name}\n` +
+      `Phone Number: ${contactData.phone}\n` +
+      `Email Address: ${contactData.email}\n` +
+      `Event / Service Type: ${contactData.service}\n` +
+      `Event Date: ${contactData.eventDate || 'To be decided'}\n\n` +
+      `Message & Requirements:\n${contactData.message || 'None'}\n\n` +
+      `Best regards,\n${contactData.name}`
+
+    const mailtoUrl = `mailto:vashokphotos@gmail.com?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`
+
+    // Save submission snapshot for UI
+    setSubmittedInquiry({
+      ...contactData,
+      whatsappUrl,
+      mailtoUrl,
+    })
     setContactSubmitted(true)
-    setTimeout(() => {
-      setContactSubmitted(false)
-      setContactData({
-        name: '',
-        phone: '',
-        email: '',
-        service: 'Weddings & Marriages',
-        eventDate: '',
-        message: '',
-      })
-    }, 4000)
+
+    // Automatically trigger WhatsApp in new tab
+    try {
+      window.open(whatsappUrl, '_blank')
+    } catch (_) {}
+
+    // Optional background POST to Google Apps Script webhook
+    if (appsScriptUrl) {
+      try {
+        fetch(appsScriptUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'inquiry',
+            ...contactData,
+            recipient: 'vashokphotos@gmail.com',
+            submittedAt: new Date().toISOString(),
+          }),
+        }).catch(() => {})
+      } catch (_) {}
+    }
   }
 
   const handleNavClick = (sectionId) => {
@@ -334,18 +552,20 @@ function App() {
             <a href="#home" onClick={(e) => { e.preventDefault(); handleNavClick('home') }}>Home</a>
             <a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Services</a>
             <a href="#gallery" onClick={(e) => { e.preventDefault(); handleNavClick('gallery') }}>Gallery</a>
+            <a href="#csr" onClick={(e) => { e.preventDefault(); handleNavClick('csr') }}>CSR Impact</a>
+            <a href="#customers" onClick={(e) => { e.preventDefault(); handleNavClick('customers') }}>Customers</a>
             <a href="#about" onClick={(e) => { e.preventDefault(); handleNavClick('about') }}>About Us</a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); handleNavClick('contact') }}>Contact</a>
-            <button 
-              className="nav-cta-btn" 
-              type="button" 
+            <button
+              className="nav-cta-btn"
+              type="button"
               onClick={() => handleNavClick('contact')}
             >
               Book a Shoot <span>→</span>
             </button>
           </div>
 
-          <button 
+          <button
             className="mobile-menu-toggle"
             type="button"
             aria-label="Toggle navigation menu"
@@ -367,6 +587,22 @@ function App() {
 
         {/* Section 1: Home / Hero */}
         <section id="home" className="hero-section">
+          {/* Floating Animated Lottie Animation in Hero Corner */}
+          <div className="hero-camera-floater" aria-hidden="true">
+            <div className="hero-cam-glow"></div>
+            <div className="hero-cam-body">
+              <dotlottie-player
+                src="https://lottie.host/5cb0779b-0163-4d4e-8668-1021743d6efc/o67qkEg6hM.lottie"
+                background="transparent"
+                speed="1"
+                style={{ width: '130px', height: '130px' }}
+                loop
+                autoplay
+              ></dotlottie-player>
+            </div>
+            <span className="hero-cam-label">LIVE SHOOT READY</span>
+          </div>
+
           <div className="hero-content">
             <div className="hero-eyebrow-wrapper">
               <span className="eyebrow hero-eyebrow">
@@ -377,26 +613,26 @@ function App() {
               Crafting Timeless <span className="text-gradient">Visual Stories</span> For Every Milestone.
             </h1>
             <p className="hero-desc">
-              From sacred marriage muhurthams and grand temple festivals to vibrant birthday celebrations, 
+              From sacred marriage muhurthams and grand temple festivals to vibrant birthday celebrations,
               corporate galas, and heartfelt family moments — we preserve emotions that endure for generations.
             </p>
             <div className="hero-actions">
-              <button 
-                type="button" 
-                className="btn-primary" 
+              <button
+                type="button"
+                className="btn-primary"
                 onClick={() => handleNavClick('services')}
               >
                 <span>Explore Services</span> <span className="btn-arrow">↓</span>
               </button>
-              <button 
-                type="button" 
-                className="btn-secondary" 
+              <button
+                type="button"
+                className="btn-secondary"
                 onClick={() => handleNavClick('gallery')}
               >
                 <span>View Client Gallery</span> <span className="btn-arrow">↗</span>
               </button>
             </div>
-            
+
             <div className="hero-stats-strip">
               <div className="stat-pill">
                 <div className="stat-glow"></div>
@@ -428,7 +664,7 @@ function App() {
             <p className="section-kicker">What We Do</p>
             <h2 className="section-title">Comprehensive Photography & Videography Services</h2>
             <p className="section-subtitle">
-              Every occasion is unique. We provide end-to-end bespoke coverage with high-end camera technology, 
+              Every occasion is unique. We provide end-to-end bespoke coverage with high-end camera technology,
               cinematic lighting, and heartfelt storytelling.
             </p>
           </div>
@@ -453,8 +689,8 @@ function App() {
                   ))}
                 </div>
                 <div className="service-card-footer">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="service-book-btn"
                     onClick={() => selectServiceForInquiry(svc.title)}
                   >
@@ -515,19 +751,172 @@ function App() {
           </div>
         </section>
 
-        {/* Section 4: About Us */}
+        {/* Section 4: CSR Impact & Social Initiatives */}
+        <section id="csr" className="section-block csr-section">
+          <div className="section-header">
+            <p className="section-kicker">Social Impact & Field Storytelling</p>
+            <h2 className="section-title">CSR & Community Documentary Projects</h2>
+            <p className="section-subtitle">
+              We partner with corporate foundations, NGOs, and community trust programs to document real transformation —
+              from remote tribal settlements and urban eco-parks to child development centers.
+            </p>
+          </div>
+
+          <div className="csr-grid">
+            {csrProjectsData.map((project) => (
+              <div className="csr-card" key={project.id}>
+                <div className="csr-card-glow" aria-hidden="true"></div>
+                <div className="csr-card-header">
+                  <div className="csr-icon-box">
+                    <span className="csr-icon" role="img" aria-hidden="true">{project.icon}</span>
+                  </div>
+                  <span className="csr-badge" style={{ backgroundColor: `${project.badgeColor}15`, color: project.badgeColor, borderColor: `${project.badgeColor}40` }}>
+                    {project.badge}
+                  </span>
+                </div>
+                <div className="csr-location-tag">
+                  <span>📍 {project.location}</span>
+                </div>
+                <h3 className="csr-title">{project.title}</h3>
+                <p className="csr-desc">{project.description}</p>
+
+                <div className="csr-highlights-box">
+                  <span className="highlights-title">Key Documentation Focus:</span>
+                  <ul className="csr-highlights-list">
+                    {project.highlights.map((item, idx) => (
+                      <li key={idx}>
+                        <span className="csr-bullet" style={{ backgroundColor: project.badgeColor }}></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="csr-stats-strip">
+                  <div className="csr-stat-item">
+                    <span className="csr-stat-label">Impact Scope</span>
+                    <strong className="csr-stat-val">{project.stats.impact}</strong>
+                  </div>
+                  <div className="csr-stat-item">
+                    <span className="csr-stat-label">Deliverables</span>
+                    <strong className="csr-stat-val">{project.stats.coverage}</strong>
+                  </div>
+                </div>
+
+                <div className="csr-card-footer">
+                  <button
+                    type="button"
+                    className="csr-inquire-btn"
+                    onClick={() => selectServiceForInquiry(project.title)}
+                  >
+                    Request CSR Documentation <span>→</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Section 5: Customer Reviews & Client Stories */}
+        <section id="customers" className="section-block customers-section">
+          <div className="section-header">
+            <p className="section-kicker">Client Love & Testimonials</p>
+            <h2 className="section-title">Customer Stories & Cherished Moments</h2>
+            <p className="section-subtitle">
+              Hear from sacred temple trusts, couples, families, and corporate foundations who trusted us to capture their life-defining milestones.
+            </p>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="customer-filter-bar">
+            <button
+              type="button"
+              className={`customer-filter-btn ${customerFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setCustomerFilter('all')}
+            >
+              All Clients ({customerReviewsData.length})
+            </button>
+            <button
+              type="button"
+              className={`customer-filter-btn ${customerFilter === 'institutions' ? 'active' : ''}`}
+              onClick={() => setCustomerFilter('institutions')}
+            >
+              🏫 Institutions & Corporates (3)
+            </button>
+            <button
+              type="button"
+              className={`customer-filter-btn ${customerFilter === 'temples' ? 'active' : ''}`}
+              onClick={() => setCustomerFilter('temples')}
+            >
+              🛕 Temples & Devasthanams (4)
+            </button>
+          </div>
+
+          <div className="customers-grid">
+            {customerReviewsData
+              .filter((review) => customerFilter === 'all' || review.category === customerFilter)
+              .map((review) => (
+                <div className="customer-card" key={review.id}>
+                  <div className="customer-quote-icon">“</div>
+                  <div className="customer-rating" aria-label={`${review.rating} out of 5 stars`}>
+                    {Array.from({ length: review.rating }).map((_, i) => (
+                      <span key={i} className="star-icon">★</span>
+                    ))}
+                  </div>
+                  <p className="customer-review-text">"{review.review}"</p>
+
+                  <div className="customer-profile">
+                    <div className="customer-avatar-wrap">
+                      <ClientAvatar
+                        src={review.image}
+                        alt={review.name}
+                        fallbackInitials={review.fallbackInitials}
+                      />
+                    </div>
+                    <div className="customer-meta">
+                      <h4 className="customer-name">{review.name}</h4>
+                      <span className="customer-event-tag">{review.event}</span>
+                      <span className="customer-loc">📍 {review.location}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {/* Customer Image Upload / Story Banner */}
+          <div className="customer-cta-banner">
+            <div className="cta-banner-content">
+              <span className="cta-badge">🌟 Be In Our Spotlight</span>
+              <h3>Have We Photographed Your Celebration?</h3>
+              <p>
+                We love sharing client memories and customer photos! Send us your favorite captures or book your upcoming shoot to be featured on our wall of memories.
+              </p>
+            </div>
+            <div className="cta-banner-actions">
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => handleNavClick('contact')}
+              >
+                <span>Share Story / Book Shoot</span> <span className="btn-arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 6: About Us */}
         <section id="about" className="section-block about-section">
           <div className="about-grid">
             <div className="about-text-column">
               <p className="section-kicker">About Anbudan Photos</p>
               <h2 className="section-title">Passionate Storytellers Behind the Lens</h2>
               <p className="about-lead">
-                With a deep reverence for tradition and an eye for contemporary aesthetics, 
+                With a deep reverence for tradition and an eye for contemporary aesthetics,
                 we specialize in capturing the raw emotions, rituals, and unforgettable joys of your celebrations.
               </p>
               <p className="about-body">
-                Founded with a mission to create heartfelt, archival-quality imagery, Anbudan Photos brings together 
-                seasoned cinematographers, creative editors, and candid photographers. We don’t just take photographs; 
+                Founded with a mission to create heartfelt, archival-quality imagery, Anbudan Photos brings together
+                seasoned cinematographers, creative editors, and candid photographers. We don’t just take photographs;
                 we craft visual legacies that families cherish for a lifetime.
               </p>
 
@@ -561,7 +950,7 @@ function App() {
                 <span className="card-badge">Our Studio Promise</span>
                 <h3>Preserving Pure Emotion In Every Frame</h3>
                 <p>
-                  Whether it is the sacred stillness of a temple festival or the ecstatic energy of a wedding dance floor, 
+                  Whether it is the sacred stillness of a temple festival or the ecstatic energy of a wedding dance floor,
                   we deliver an effortless and joyful photography experience.
                 </p>
                 <div className="studio-metrics-grid">
@@ -598,7 +987,7 @@ function App() {
             <p className="section-kicker">Get In Touch</p>
             <h2 className="section-title">Let’s Capture Your Next Celebration</h2>
             <p className="section-subtitle">
-              Planning a wedding, family function, official corporate event, or temple celebration? 
+              Planning a wedding, family function, official corporate event, or temple celebration?
               Share your details below and we’ll get back with a customized package.
             </p>
           </div>
@@ -608,27 +997,31 @@ function App() {
               <div className="contact-card-info">
                 <h3>Studio Coordinates</h3>
                 <p className="contact-tagline">Available for local, regional, and destination assignments.</p>
-                
+
                 <div className="contact-details-list">
                   <div className="contact-item">
                     <span className="contact-icon">📞</span>
                     <div>
                       <strong>Call / WhatsApp</strong>
-                      <p>+91 98765 43210 / +91 98400 12345</p>
+                      <p>
+                        <a href="tel:+919994499238" style={{ color: 'inherit', textDecoration: 'none' }}>+91 99944 99238</a>
+                      </p>
                     </div>
                   </div>
                   <div className="contact-item">
                     <span className="contact-icon">✉️</span>
                     <div>
                       <strong>Email Inquiries</strong>
-                      <p>contact@anbudanphotos.com</p>
+                      <p>
+                        <a href="mailto:vashokphotos@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>vashokphotos@gmail.com</a>
+                      </p>
                     </div>
                   </div>
                   <div className="contact-item">
                     <span className="contact-icon">📍</span>
                     <div>
                       <strong>Studio Location</strong>
-                      <p>Anbudan Photos Studio, Art District, Chennai, Tamil Nadu</p>
+                      <p>Anbudan Photos Studio, Art District, Coimbatore & Chennai, Tamil Nadu</p>
                     </div>
                   </div>
                   <div className="contact-item">
@@ -641,10 +1034,31 @@ function App() {
                 </div>
 
                 <div className="contact-social-pills">
-                  <span className="social-pill">Instagram</span>
-                  <span className="social-pill">YouTube</span>
-                  <span className="social-pill">Facebook</span>
-                  <span className="social-pill">WhatsApp</span>
+                  <a
+                    href="https://www.instagram.com/anbudan_photos?utm_source=qr&stkn=MXJ2Y21ib2F4NHEyeA=="
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="social-pill instagram-pill"
+                    title="Follow Anbudan Photos on Instagram"
+                  >
+                    📸 Instagram
+                  </a>
+                  <a
+                    href="mailto:vashokphotos@gmail.com"
+                    className="social-pill email-pill"
+                    title="Email Anbudan Photos"
+                  >
+                    ✉️ vashokphotos@gmail.com
+                  </a>
+                  <a
+                    href="https://wa.me/919994499238?text=Hello%20Anbudan%20Photos,%20I%20would%20like%20to%20inquire%20about%20a%20photoshoot."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="social-pill whatsapp-pill"
+                    title="Chat on WhatsApp"
+                  >
+                    💬 WhatsApp (+91 99944 99238)
+                  </a>
                 </div>
               </div>
             </div>
@@ -653,19 +1067,57 @@ function App() {
               {contactSubmitted ? (
                 <div className="form-success-box" role="alert">
                   <div className="success-icon">✓</div>
-                  <h3>Thank you for reaching out!</h3>
-                  <p>Your event details have been received. Our team will contact you within 24 hours to discuss packages and availability.</p>
+                  <h3>Thank you for reaching out, {submittedInquiry?.name}!</h3>
+                  <p>
+                    Your booking inquiry for <strong>{submittedInquiry?.service}</strong> has been prepared and sent to WhatsApp.
+                  </p>
+
+                  <div className="success-action-buttons">
+                    <a
+                      href={submittedInquiry?.whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-success-whatsapp"
+                    >
+                      💬 Open in WhatsApp (+91 99944 99238)
+                    </a>
+                    <a
+                      href={submittedInquiry?.mailtoUrl}
+                      className="btn-success-email"
+                    >
+                      ✉️ Send Email to vashokphotos@gmail.com
+                    </a>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-send-another"
+                    onClick={() => {
+                      setContactSubmitted(false)
+                      setSubmittedInquiry(null)
+                      setContactData({
+                        name: '',
+                        phone: '',
+                        email: '',
+                        service: 'Weddings & Marriages',
+                        eventDate: '',
+                        message: '',
+                      })
+                    }}
+                  >
+                    ← Submit Another Inquiry
+                  </button>
                 </div>
               ) : (
                 <form className="contact-form" onSubmit={handleContactSubmit}>
                   <div className="form-row">
                     <div className="form-group">
                       <label htmlFor="contact-name">Your Full Name *</label>
-                      <input 
-                        type="text" 
-                        id="contact-name" 
-                        name="name" 
-                        required 
+                      <input
+                        type="text"
+                        id="contact-name"
+                        name="name"
+                        required
                         placeholder="e.g. Anand Kumar"
                         value={contactData.name}
                         onChange={handleContactChange}
@@ -673,11 +1125,11 @@ function App() {
                     </div>
                     <div className="form-group">
                       <label htmlFor="contact-phone">Phone Number (with WhatsApp) *</label>
-                      <input 
-                        type="tel" 
-                        id="contact-phone" 
-                        name="phone" 
-                        required 
+                      <input
+                        type="tel"
+                        id="contact-phone"
+                        name="phone"
+                        required
                         placeholder="+91 98765 43210"
                         value={contactData.phone}
                         onChange={handleContactChange}
@@ -688,11 +1140,11 @@ function App() {
                   <div className="form-row">
                     <div className="form-group">
                       <label htmlFor="contact-email">Email Address *</label>
-                      <input 
-                        type="email" 
-                        id="contact-email" 
-                        name="email" 
-                        required 
+                      <input
+                        type="email"
+                        id="contact-email"
+                        name="email"
+                        required
                         placeholder="anand@example.com"
                         value={contactData.email}
                         onChange={handleContactChange}
@@ -700,9 +1152,9 @@ function App() {
                     </div>
                     <div className="form-group">
                       <label htmlFor="contact-service">Event / Service Type *</label>
-                      <select 
-                        id="contact-service" 
-                        name="service" 
+                      <select
+                        id="contact-service"
+                        name="service"
                         value={contactData.service}
                         onChange={handleContactChange}
                       >
@@ -716,10 +1168,10 @@ function App() {
 
                   <div className="form-group">
                     <label htmlFor="contact-date">Event Date (Tentative or Confirmed)</label>
-                    <input 
-                      type="date" 
-                      id="contact-date" 
-                      name="eventDate" 
+                    <input
+                      type="date"
+                      id="contact-date"
+                      name="eventDate"
                       value={contactData.eventDate}
                       onChange={handleContactChange}
                     />
@@ -727,10 +1179,10 @@ function App() {
 
                   <div className="form-group">
                     <label htmlFor="contact-message">Tell Us About Your Event</label>
-                    <textarea 
-                      id="contact-message" 
-                      name="message" 
-                      rows="4" 
+                    <textarea
+                      id="contact-message"
+                      name="message"
+                      rows="4"
                       placeholder="Location, estimated guest count, specific requirements or traditions to capture..."
                       value={contactData.message}
                       onChange={handleContactChange}
@@ -768,6 +1220,8 @@ function App() {
               <li><a href="#home" onClick={(e) => { e.preventDefault(); handleNavClick('home') }}>Home</a></li>
               <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Services</a></li>
               <li><a href="#gallery" onClick={(e) => { e.preventDefault(); handleNavClick('gallery') }}>Client Gallery</a></li>
+              <li><a href="#csr" onClick={(e) => { e.preventDefault(); handleNavClick('csr') }}>CSR Projects</a></li>
+              <li><a href="#customers" onClick={(e) => { e.preventDefault(); handleNavClick('customers') }}>Customer Stories</a></li>
               <li><a href="#about" onClick={(e) => { e.preventDefault(); handleNavClick('about') }}>About Studio</a></li>
               <li><a href="#contact" onClick={(e) => { e.preventDefault(); handleNavClick('contact') }}>Contact & Bookings</a></li>
             </ul>
@@ -779,7 +1233,7 @@ function App() {
               <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Weddings & Marriages</a></li>
               <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Temple Functions & Festivals</a></li>
               <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Family Functions & Rituals</a></li>
-              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Corporate & Official Events</a></li>
+              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>CSR & Social Documentary</a></li>
               <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Cinematography & Live Stream</a></li>
             </ul>
           </div>
@@ -787,8 +1241,8 @@ function App() {
 
         <div className="footer-bottom">
           <p>© {new Date().getFullYear()} Anbudan Photos. All rights reserved.</p>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="back-to-top"
             onClick={() => handleNavClick('home')}
             aria-label="Back to top"
@@ -800,6 +1254,12 @@ function App() {
 
       {/* Full-screen Photo Viewer Modal */}
       {activeAlbum && <MainAlbum album={activeAlbum} onClose={closeAlbum} />}
+
+      {/* Interactive Animated Photographer & Camera Corner Mascot */}
+      <PhotographerWidget
+        onBookClick={() => handleNavClick('contact')}
+        onGalleryClick={() => handleNavClick('gallery')}
+      />
     </div>
   )
 }
