@@ -74,7 +74,7 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
           filter.connect(gain2)
           gain2.connect(ctx.destination)
           noise2.start()
-        } catch (_) {}
+        } catch (_) { }
       }, 70)
     } catch (_) {
       // Audio context may be restricted by browser policy before user interaction
@@ -100,16 +100,16 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
       {isFlashActive && <div className="camera-screen-flash" aria-hidden="true" />}
 
       {/* Floating Corner Mascot & Widget Container */}
-      <div 
+      <div
         className={`photographer-widget-container ${isMinimized ? 'is-minimized' : ''}`}
         aria-label="Interactive Photographer Mascot"
       >
         {/* Floating Polaroid Keepsake Popup */}
         {showPolaroid && (
           <div className="polaroid-popup" role="dialog" aria-label="Captured photo preview">
-            <button 
-              type="button" 
-              className="polaroid-close" 
+            <button
+              type="button"
+              className="polaroid-close"
               onClick={() => setShowPolaroid(false)}
               aria-label="Close photo preview"
             >
@@ -117,9 +117,9 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
             </button>
             <div className="polaroid-inner">
               <div className="polaroid-photo">
-                <img 
-                  src="/01 org.png" 
-                  alt="Anbudan Photos special capture" 
+                <img
+                  src="/01 org.png"
+                  alt="Anbudan Photos special capture"
                   className="polaroid-img"
                 />
                 <div className="polaroid-shimmer" />
@@ -130,8 +130,8 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
                 <span className="polaroid-title">Anbudan Memories</span>
                 <span className="polaroid-sub">Framing your golden moments</span>
                 <div className="polaroid-actions">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="polaroid-btn btn-book"
                     onClick={() => {
                       setShowPolaroid(false)
@@ -140,8 +140,8 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
                   >
                     📸 Book This Shoot
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="polaroid-btn btn-gallery"
                     onClick={() => {
                       setShowPolaroid(false)
@@ -158,33 +158,34 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
 
         {/* Minimized Quick Camera Button */}
         {isMinimized ? (
-          <button 
-            type="button" 
-            className="minimized-camera-btn"
-            onClick={() => setIsMinimized(false)}
-            title="Expand Photographer Mascot"
-            aria-label="Open Photographer Mascot"
-          >
-            <span className="camera-pulse-ring" />
-            <svg viewBox="0 0 24 24" fill="none" className="min-cam-svg" stroke="currentColor" strokeWidth="2">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" fill="#c81e28" stroke="#ffffff" />
-              <circle cx="12" cy="13" r="4" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
-              <circle cx="12" cy="13" r="1.5" fill="#38bdf8" />
-            </svg>
-            <span className="min-badge">📸 Snap!</span>
-          </button>
+          <></>
+          // <button 
+          //   type="button" 
+          //   className="minimized-camera-btn"
+          //   onClick={() => setIsMinimized(false)}
+          //   title="Expand Photographer Mascot"
+          //   aria-label="Open Photographer Mascot"
+          // >
+          //   <span className="camera-pulse-ring" />
+          //   <svg viewBox="0 0 24 24" fill="none" className="min-cam-svg" stroke="currentColor" strokeWidth="2">
+          //     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" fill="#c81e28" stroke="#ffffff" />
+          //     <circle cx="12" cy="13" r="4" fill="#0f172a" stroke="#ffffff" strokeWidth="2" />
+          //     <circle cx="12" cy="13" r="1.5" fill="#38bdf8" />
+          //   </svg>
+          //   <span className="min-badge">📸 Snap!</span>
+          // </button>
         ) : (
           /* Full Interactive Mascot Card */
-          <div 
+          <div
             className="photographer-card"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             {/* Header Control Buttons */}
             <div className="mascot-controls">
-              <button 
-                type="button" 
-                className="ctrl-btn" 
+              <button
+                type="button"
+                className="ctrl-btn"
                 onClick={() => setIsMinimized(true)}
                 title="Minimize mascot"
                 aria-label="Minimize"
@@ -200,8 +201,8 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
             </div>
 
             {/* Main Interactive Animated Photographer + Camera SVG */}
-            <div 
-              className="photographer-illustration-wrapper" 
+            <div
+              className="photographer-illustration-wrapper"
               onClick={handleCameraSnap}
               title="Click to take a snapshot!"
               role="button"
@@ -222,10 +223,10 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
               </div>
 
               {/* Detailed Animated SVG of Photographer with Camera */}
-              <svg 
-                className="photographer-svg" 
-                viewBox="0 0 200 220" 
-                fill="none" 
+              <svg
+                className="photographer-svg"
+                viewBox="0 0 200 220"
+                fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <defs>
@@ -257,9 +258,9 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
 
                 {/* Photographer Character Body / Outfit */}
                 {/* Torso / Jacket */}
-                <path 
-                  d="M50 180 C50 150, 75 142, 100 142 C125 142, 150 150, 150 180 L155 220 L45 220 Z" 
-                  fill="#1e293b" 
+                <path
+                  d="M50 180 C50 150, 75 142, 100 142 C125 142, 150 150, 150 180 L155 220 L45 220 Z"
+                  fill="#1e293b"
                 />
                 {/* Jacket Collar & Shirt */}
                 <path d="M85 142 L100 170 L115 142 Z" fill="#ffffff" />
@@ -278,9 +279,9 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
                 <ellipse cx="129" cy="98" rx="5" ry="8" fill="url(#skinGrad)" />
 
                 {/* Stylish Photographer Cap / Beanie */}
-                <path 
-                  d="M70 92 C70 60, 130 60, 130 92 Z" 
-                  fill="#c81e28" 
+                <path
+                  d="M70 92 C70 60, 130 60, 130 92 Z"
+                  fill="#c81e28"
                 />
                 {/* Cap Visor */}
                 <path d="M66 90 Q100 84 134 90 Q100 96 66 90" fill="#991b1b" />
@@ -361,8 +362,8 @@ export default function PhotographerWidget({ onBookClick, onGalleryClick }) {
 
             {/* Mascot Action Bar */}
             <div className="mascot-action-bar">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="inquire-btn"
                 onClick={() => {
                   if (onBookClick) onBookClick()

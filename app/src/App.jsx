@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import CardAlbum from './components/cardalbum.jsx'
 import MainAlbum from './components/mainalbum.jsx'
-import PhotographerWidget from './components/PhotographerWidget.jsx'
 
 const albumCount = 10
 const photosPerAlbum = 10
@@ -584,58 +583,89 @@ function App() {
         <div className="ambient-glow glow-2" aria-hidden="true"></div>
         <div className="ambient-glow glow-3" aria-hidden="true"></div>
 
-        {/* Section 1: Home / Hero with Full-Bleed Background Carousel */}
-        <section id="home" className="hero-section hero-carousel-active">
-          {/* Full-Bleed Background Image Carousel */}
-          <div className="hero-full-carousel-bg" aria-hidden="true">
-            {heroGallery.length > 0 ? (
-              heroGallery.map((imgUrl, idx) => (
-                <div 
-                  key={imgUrl + idx}
-                  className={`hero-bg-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                >
-                  <img 
-                    src={imgUrl} 
-                    alt="Anbudan Photos cinematic showcase"
-                    className="hero-bg-img"
-                    referrerPolicy="no-referrer"
+        {/* Dedicated Top Showcase Carousel Section */}
+        <section className="top-carousel-section" aria-label="Featured Photography Reel">
+          <div className="top-carousel-wrapper">
+            <div className="top-carousel-track">
+              {heroGallery.length > 0 ? (
+                heroGallery.map((imgUrl, idx) => (
+                  <div
+                    key={imgUrl + idx}
+                    className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt="Anbudan Photos featured moment"
+                      className="top-carousel-img"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="top-carousel-slide is-active">
+                  <img
+                    src="/images/temple2.png"
+                    alt="Anbudan Photos showcase"
+                    className="top-carousel-img"
                   />
                 </div>
-              ))
-            ) : (
-              <div className="hero-bg-slide is-active">
-                <img 
-                  src="/images/temple2.png" 
-                  alt="Anbudan Photos showcase"
-                  className="hero-bg-img"
-                />
+              )}
+            </div>
+
+            {/* Cinematic Gradient Caption & Controls Overlay */}
+            <div className="top-carousel-overlay">
+              <div className="top-carousel-caption">
+                <span className="top-carousel-tag">
+                  <span className="live-dot"></span> LIVE REEL ARCHIVE
+                </span>
+                <h2 className="top-carousel-title">Moments of Pure Celebration & Heritage</h2>
+                <p className="top-carousel-subtitle">Live from Google Drive Studio Archive • 4K High-Resolution Highlights</p>
               </div>
+
+              <div className="top-carousel-controls">
+                <span className="top-carousel-counter">
+                  <strong>{String(heroPhotoIndex + 1).padStart(2, '0')}</strong> / {String(heroGallery.length || 1).padStart(2, '0')}
+                </span>
+                <div className="top-carousel-dots">
+                  {heroGallery.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                      onClick={() => setHeroPhotoIndex(idx)}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Dedicated Top Carousel Chevrons */}
+            {heroGallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="top-carousel-arrow prev"
+                  onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
+                  aria-label="Previous Slide"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="top-carousel-arrow next"
+                  onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
+                  aria-label="Next Slide"
+                >
+                  ›
+                </button>
+              </>
             )}
-            <div className="hero-full-carousel-overlay"></div>
           </div>
+        </section>
 
-          {/* Hero Carousel Navigation Chevrons */}
-          {heroGallery.length > 1 && (
-            <>
-              <button 
-                type="button" 
-                className="hero-nav-arrow prev" 
-                onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
-                aria-label="Previous Hero Image"
-              >
-                ‹
-              </button>
-              <button 
-                type="button" 
-                className="hero-nav-arrow next" 
-                onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
-                aria-label="Next Hero Image"
-              >
-                ›
-              </button>
-            </>
-          )}
-
+        {/* Section 1: Home / Hero Studio Overview */}
+        <section id="home" className="hero-section">
           <div className="hero-layout-grid">
             {/* Left Column: Hero Text & Storytelling */}
             <div className="hero-content">
@@ -691,107 +721,7 @@ function App() {
                 </div>
               </div>
             </div>
-
-            {/* Right Column: Professional Camera Viewfinder HUD */}
-            <div className="hero-viewfinder-column">
-              <div className="camera-viewfinder-card">
-                {/* Camera Top HUD */}
-                <div className="viewfinder-hud-top">
-                  <div className="viewfinder-rec-badge">
-                    <span className="rec-dot"></span> REC 4K
-                  </div>
-                  <div className="viewfinder-mode">AF-C • EYE-AF TRACKING</div>
-                  <div className="viewfinder-battery">
-                    <span>BAT 98%</span>
-                    <span className="battery-icon">🔋</span>
-                  </div>
-                </div>
-
-                {/* Viewfinder Main Frame with Active Photo & Logo */}
-                <div className="viewfinder-media-stage viewfinder-carousel-stage">
-                  <div className="viewfinder-carousel-track">
-                    {heroGallery.length > 0 ? (
-                      heroGallery.map((imgUrl, idx) => (
-                        <div 
-                          key={imgUrl + idx}
-                          className={`viewfinder-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                        >
-                          <img 
-                            src={imgUrl} 
-                            alt="Anbudan Photos portfolio moment"
-                            className="viewfinder-carousel-img"
-                            referrerPolicy="no-referrer"
-                          />
-                        </div>
-                      ))
-                    ) : (
-                      <div className="viewfinder-carousel-slide is-active">
-                        <img 
-                          src="/images/temple2.png" 
-                          alt="Anbudan Photos showcase"
-                          className="viewfinder-carousel-img"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Studio Watermark Badge (Non-intrusive & Crystal-Clear) */}
-                  <div className="viewfinder-logo-overlay">
-                    <div className="viewfinder-logo-backdrop">
-                      <img 
-                        src="/01 org.png" 
-                        alt="Anbudan Photos official studio logo"
-                        className="viewfinder-brand-logo"
-                      />
-                      <div className="viewfinder-logo-text">
-                        <span className="brand-name">ANBUDAN PHOTOS</span>
-                        <span className="brand-sub">STUDIO & CINEMATOGRAPHY</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Focus Brackets & Reticle */}
-                  <div className="viewfinder-corner top-left"></div>
-                  <div className="viewfinder-corner top-right"></div>
-                  <div className="viewfinder-corner bottom-left"></div>
-                  <div className="viewfinder-corner bottom-right"></div>
-
-                  <div className="viewfinder-crosshair">
-                    <div className="crosshair-box">
-                      <span className="focus-lock-text">[ AF LOCK ]</span>
-                    </div>
-                  </div>
-
-                  <div className="viewfinder-badge-tag">
-                    <span>📸 LIVE REEL • {heroGallery.length > 0 ? `${heroPhotoIndex + 1}/${heroGallery.length}` : 'STUDIO'}</span>
-                  </div>
-                </div>
-
-                {/* Camera Bottom Lens Telemetry */}
-                <div className="viewfinder-hud-bottom">
-                  <span className="hud-telemetry"><strong>f/1.4</strong> APERTURE</span>
-                  <span className="hud-telemetry"><strong>1/1600s</strong> SHUTTER</span>
-                  <span className="hud-telemetry"><strong>ISO 100</strong> SENSITIVITY</span>
-                  <span className="hud-telemetry"><strong>85mm GM</strong> PRIME LENS</span>
-                </div>
-              </div>
-            </div>
           </div>
-
-          {/* Hero Carousel Dots Indicator */}
-          {heroGallery.length > 1 && (
-            <div className="hero-carousel-dots" aria-label="Hero Slide Indicators">
-              {heroGallery.map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className={`hero-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                  onClick={() => setHeroPhotoIndex(idx)}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          )}
 
           {/* Photography Studio Gear & Artistry Strip */}
           <div className="photo-gear-marquee-strip" aria-label="Studio Gear and Capabilities">
@@ -914,8 +844,8 @@ function App() {
             </div>
           )}
 
-          <div className="curved-gallery-section" aria-label="Photo albums">
-            <div className="curved-album-track">
+          <div className="gallery-grid-container" aria-label="Photo albums">
+            <div className="gallery-album-grid">
               {albums.map((album, index) => (
                 <CardAlbum
                   album={album}
@@ -931,7 +861,7 @@ function App() {
         </section>
 
         {/* Section 4: CSR Impact & Social Initiatives */}
-        <section id="csr" className="section-block csr-section">
+        {/* <section id="csr" className="section-block csr-section">
           <div className="section-header">
             <p className="section-kicker">Social Impact & Field Storytelling</p>
             <h2 className="section-title">CSR & Community Documentary Projects</h2>
@@ -991,7 +921,7 @@ function App() {
               )
             })}
           </div>
-        </section>
+        </section> */}
 
         {/* Section 5: Customer Reviews & Client Stories */}
         <section id="customers" className="section-block customers-section">
@@ -1353,8 +1283,8 @@ function App() {
                     ></textarea>
                   </div>
 
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn-primary submit-btn"
                     disabled={isSendingInquiry}
                   >
@@ -1422,12 +1352,6 @@ function App() {
 
       {/* Full-screen Photo Viewer Modal */}
       {activeAlbum && <MainAlbum album={activeAlbum} onClose={closeAlbum} />}
-
-      {/* Interactive Animated Photographer & Camera Corner Mascot */}
-      <PhotographerWidget
-        onBookClick={() => handleNavClick('contact')}
-        onGalleryClick={() => handleNavClick('gallery')}
-      />
     </div>
   )
 }
