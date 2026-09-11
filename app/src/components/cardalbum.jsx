@@ -4,7 +4,7 @@ function CardAlbum({ album, index, total = 10, onOpen, isLoading }) {
   const photoCount = album.photos?.length || 0
 
   return (
-    <div 
+    <div
       className={`gallery-album-card ${isLoading ? 'is-loading' : ''}`}
       onClick={() => onOpen(album)}
       role="button"
@@ -18,12 +18,12 @@ function CardAlbum({ album, index, total = 10, onOpen, isLoading }) {
       aria-label={`Open ${albumName} album with ${photoCount} photos`}
     >
       <div className="gallery-album-glow" aria-hidden="true"></div>
-      
+
       <div className="gallery-album-media">
         {album.cover ? (
-          <img 
-            src={album.cover} 
-            alt={`${albumName} cover`} 
+          <img
+            src={album.cover}
+            alt={`${albumName} cover`}
             className="gallery-album-img"
             referrerPolicy="no-referrer"
             loading="lazy"
@@ -33,7 +33,7 @@ function CardAlbum({ album, index, total = 10, onOpen, isLoading }) {
             <span className="placeholder-text">{albumName}</span>
           </div>
         )}
-        
+
         {/* Top Badge: Photo Count */}
         <span className="gallery-album-badge">
           📸 {photoCount} Photos
@@ -49,8 +49,8 @@ function CardAlbum({ album, index, total = 10, onOpen, isLoading }) {
 
       <div className="gallery-album-body">
         <div className="gallery-album-meta-row">
-          <span className="gallery-step-badge">#{stepNumber}</span>
-          <span className="gallery-curated-tag">Client Archive</span>
+          {/* <span className="gallery-step-badge">#{stepNumber}</span>
+          <span className="gallery-curated-tag">Client Archive</span> */}
         </div>
         <h3 className="gallery-album-title" title={albumName}>{albumName}</h3>
         <div className="gallery-album-footer">

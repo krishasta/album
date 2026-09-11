@@ -550,7 +550,7 @@ function App() {
             <a href="#home" onClick={(e) => { e.preventDefault(); handleNavClick('home') }}>Home</a>
             <a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Services</a>
             <a href="#gallery" onClick={(e) => { e.preventDefault(); handleNavClick('gallery') }}>Gallery</a>
-            <a href="#csr" onClick={(e) => { e.preventDefault(); handleNavClick('csr') }}>CSR Impact</a>
+            {/* <a href="#csr" onClick={(e) => { e.preventDefault(); handleNavClick('csr') }}>CSR Impact</a> */}
             <a href="#customers" onClick={(e) => { e.preventDefault(); handleNavClick('customers') }}>Customers</a>
             <a href="#about" onClick={(e) => { e.preventDefault(); handleNavClick('about') }}>About Us</a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); handleNavClick('contact') }}>Contact</a>
