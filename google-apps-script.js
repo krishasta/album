@@ -101,3 +101,79 @@ function doGet(e) {
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }
+
+/**
+ * Automatically sends email notifications for website booking inquiries
+ */
+function doPost(e) {
+  try {
+    let data = {};
+    if (e.postData && e.postData.contents) {
+      try {
+        data = JSON.parse(e.postData.contents);
+      } catch (parseErr) {
+        data = e.parameter || {};
+      }
+    } else if (e.parameter) {
+      data = e.parameter;
+    }
+
+    const recipient = "vashokphotos@gmail.com";
+    const clientName = data.name || "Valued Client";
+    const clientPhone = data.phone || "Not provided";
+    const clientEmail = data.email || "Not provided";
+    const clientService = data.service || "General Photography";
+    const clientDate = data.eventDate || "To be discussed";
+    const clientMessage = data.message || "No additional notes provided.";
+
+    const subject = "📸 New Booking Inquiry: " + clientName + " - " + clientService;
+    
+    const htmlBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <div style="background-color: #c81e28; color: #ffffff; padding: 20px 24px; text-align: center;">
+          <h2 style="margin: 0; font-size: 20px; letter-spacing: 1px;">ANBUDAN PHOTOS</h2>
+          <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">New Website Booking Inquiry</p>
+        </div>
+        <div style="padding: 24px; background-color: #ffffff; color: #1e293b; line-height: 1.6;">
+          <h3 style="color: #0f172a; margin-top: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">Client Information</h3>
+          <p style="margin: 8px 0;"><strong>👤 Client Name:</strong> ${clientName}</p>
+          <p style="margin: 8px 0;"><strong>📞 Phone / WhatsApp:</strong> <a href="tel:${clientPhone}" style="color: #0284c7;">${clientPhone}</a></p>
+          <p style="margin: 8px 0;"><strong>✉️ Email:</strong> <a href="mailto:${clientEmail}" style="color: #0284c7;">${clientEmail}</a></p>
+          <p style="margin: 8px 0;"><strong>🏷️ Service Requested:</strong> <span style="background-color: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 4px; font-weight: bold;">${clientService}</span></p>
+          <p style="margin: 8px 0;"><strong>📅 Event Date:</strong> ${clientDate}</p>
+          
+          <h3 style="color: #0f172a; margin-top: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">Requirements & Notes</h3>
+          <div style="background-color: #f8fafc; padding: 14px; border-radius: 8px; border-left: 4px solid #c81e28; margin: 10px 0;">
+            ${clientMessage.replace(/\n/g, '<br/>')}
+          </div>
+
+          <div style="margin-top: 24px; text-align: center;">
+            <a href="https://wa.me/${clientPhone.replace(/[^0-9]/g, '')}" style="display: inline-block; background-color: #22c55e; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-right: 10px;">💬 Chat Client on WhatsApp</a>
+            <a href="mailto:${clientEmail}?subject=Re:%20Anbudan%20Photos%20Booking%20Inquiry" style="display: inline-block; background-color: #0f172a; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">✉️ Reply via Email</a>
+          </div>
+        </div>
+        <div style="background-color: #f1f5f9; padding: 12px 24px; text-align: center; font-size: 11px; color: #64748b;">
+          Anbudan Photos Studio & Cinematography • Coimbatore, Tamil Nadu
+        </div>
+      </div>
+    `;
+
+    MailApp.sendEmail({
+      to: recipient,
+      subject: subject,
+      htmlBody: htmlBody
+    });
+
+    return ContentService.createTextOutput(JSON.stringify({ 
+      status: "success", 
+      message: "Email delivered to " + recipient 
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ 
+      status: "error", 
+      error: err.toString() 
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+

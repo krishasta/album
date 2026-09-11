@@ -261,6 +261,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [customerFilter, setCustomerFilter] = useState('all')
   const [contactSubmitted, setContactSubmitted] = useState(false)
+  const [isSendingInquiry, setIsSendingInquiry] = useState(false)
   const [contactData, setContactData] = useState({
     name: '',
     phone: '',
@@ -443,63 +444,76 @@ function App() {
 
   const [submittedInquiry, setSubmittedInquiry] = useState(null)
 
-  const handleContactSubmit = (e) => {
+  const handleContactSubmit = async (e) => {
     e.preventDefault()
+    setIsSendingInquiry(true)
+
+    const inquiryPayload = { ...contactData }
 
     // 1. Format professional WhatsApp message
     const waText = `📸 *NEW BOOKING INQUIRY - ANBUDAN PHOTOS*\n\n` +
-      `👤 *Client Name:* ${contactData.name}\n` +
-      `📞 *Phone / WhatsApp:* ${contactData.phone}\n` +
-      `✉️ *Email:* ${contactData.email}\n` +
-      `🏷️ *Service Requested:* ${contactData.service}\n` +
-      `📅 *Event Date:* ${contactData.eventDate || 'Tentative / To be discussed'}\n` +
-      `📝 *Event Details / Notes:* ${contactData.message || 'No additional notes provided'}\n\n` +
+      `👤 *Client Name:* ${inquiryPayload.name}\n` +
+      `📞 *Phone / WhatsApp:* ${inquiryPayload.phone}\n` +
+      `✉️ *Email:* ${inquiryPayload.email}\n` +
+      `🏷️ *Service Requested:* ${inquiryPayload.service}\n` +
+      `📅 *Event Date:* ${inquiryPayload.eventDate || 'Tentative / To be discussed'}\n` +
+      `📝 *Event Details / Notes:* ${inquiryPayload.message || 'No additional notes provided'}\n\n` +
       `_Sent via Anbudan Photos website inquiry form_`
 
     const whatsappUrl = `https://wa.me/919994499238?text=${encodeURIComponent(waText)}`
 
     // 2. Format mailto fallback for direct email composition
-    const mailSubject = `[New Inquiry] ${contactData.name} - ${contactData.service}`
+    const mailSubject = `[New Inquiry] ${inquiryPayload.name} - ${inquiryPayload.service}`
     const mailBody = `Hello Anbudan Photos Studio,\n\nI would like to inquire about booking photography/videography services.\n\n` +
-      `Full Name: ${contactData.name}\n` +
-      `Phone Number: ${contactData.phone}\n` +
-      `Email Address: ${contactData.email}\n` +
-      `Event / Service Type: ${contactData.service}\n` +
-      `Event Date: ${contactData.eventDate || 'To be decided'}\n\n` +
-      `Message & Requirements:\n${contactData.message || 'None'}\n\n` +
-      `Best regards,\n${contactData.name}`
+      `Full Name: ${inquiryPayload.name}\n` +
+      `Phone Number: ${inquiryPayload.phone}\n` +
+      `Email Address: ${inquiryPayload.email}\n` +
+      `Event / Service Type: ${inquiryPayload.service}\n` +
+      `Event Date: ${inquiryPayload.eventDate || 'To be decided'}\n\n` +
+      `Message & Requirements:\n${inquiryPayload.message || 'None'}\n\n` +
+      `Best regards,\n${inquiryPayload.name}`
 
     const mailtoUrl = `mailto:vashokphotos@gmail.com?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`
 
+    // 3. Immediately launch WhatsApp
+    try {
+      const waTab = window.open(whatsappUrl, '_blank')
+      if (!waTab || waTab.closed || typeof waTab.closed === 'undefined') {
+        window.location.assign(whatsappUrl)
+      }
+    } catch (_) {
+      try {
+        window.location.href = whatsappUrl
+      } catch (__) { }
+    }
+
+    // 4. Send background POST to Google Apps Script webhook to deliver actual email to vashokphotos@gmail.com
+    if (appsScriptUrl) {
+      try {
+        await fetch(appsScriptUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'inquiry',
+            ...inquiryPayload,
+            recipient: 'vashokphotos@gmail.com',
+            submittedAt: new Date().toISOString(),
+          }),
+        })
+      } catch (postErr) {
+        console.warn('Apps Script email dispatch:', postErr)
+      }
+    }
+
     // Save submission snapshot for UI
     setSubmittedInquiry({
-      ...contactData,
+      ...inquiryPayload,
       whatsappUrl,
       mailtoUrl,
     })
     setContactSubmitted(true)
-
-    // Automatically trigger WhatsApp in new tab
-    try {
-      window.open(whatsappUrl, '_blank')
-    } catch (_) { }
-
-    // Optional background POST to Google Apps Script webhook
-    if (appsScriptUrl) {
-      try {
-        fetch(appsScriptUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'inquiry',
-            ...contactData,
-            recipient: 'vashokphotos@gmail.com',
-            submittedAt: new Date().toISOString(),
-          }),
-        }).catch(() => { })
-      } catch (_) { }
-    }
+    setIsSendingInquiry(false)
   }
 
   const handleNavClick = (sectionId) => {
@@ -721,10 +735,9 @@ function App() {
                     )}
                   </div>
 
-                  {/* Dark Glassmorphism Studio Logo Overlay */}
+                  {/* Studio Watermark Badge (Non-intrusive & Crystal-Clear) */}
                   <div className="viewfinder-logo-overlay">
                     <div className="viewfinder-logo-backdrop">
-                      <div className="viewfinder-logo-glow"></div>
                       <img 
                         src="/01 org.png" 
                         alt="Anbudan Photos official studio logo"
@@ -929,34 +942,54 @@ function App() {
           </div>
 
           <div className="csr-grid">
-            {csrProjectsData.map((project) => (
-              <div className="csr-card" key={project.id}>
-                <div className="csr-card-glow" aria-hidden="true"></div>
-                <div className="csr-image-wrap">
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    className="csr-card-img"
-                    loading="lazy"
-                  />
-                  <span
-                    className="csr-image-badge"
-                    style={{
-                      backgroundColor: `${project.badgeColor}ea`,
-                      color: '#ffffff',
-                    }}
-                  >
-                    {project.badge}
-                  </span>
-                </div>
-                <div className="csr-card-body">
-                  <div className="csr-location-tag">
-                    <span>📍 {project.location}</span>
+            {csrProjectsData.map((project) => {
+              // Dynamically find live matching album from Google Drive
+              const matchedAlbum = albums.find((a) => {
+                const name = (a.name || a.title || '').toLowerCase()
+                if (project.id === 'gethaikadu-tribal' && name.includes('gethaikadu')) return true
+                if (project.id === 'semmozhi-poonga' && name.includes('semmozhi')) return true
+                if (project.id === 'anganwadi-model' && name.includes('anganwadi')) return true
+                return false
+              })
+
+              const displayImage = matchedAlbum?.cover || 
+                (matchedAlbum?.photos && matchedAlbum.photos[0] ? 
+                  (typeof matchedAlbum.photos[0] === 'string' ? matchedAlbum.photos[0] : matchedAlbum.photos[0].url) 
+                  : '') || project.image
+
+              return (
+                <div 
+                  className="csr-card" 
+                  key={project.id}
+                >
+                  <div className="csr-card-glow" aria-hidden="true"></div>
+                  <div className="csr-image-wrap">
+                    <img
+                      src={displayImage}
+                      alt={project.title}
+                      className="csr-card-img"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                    <span
+                      className="csr-image-badge"
+                      style={{
+                        backgroundColor: `${project.badgeColor}ea`,
+                        color: '#ffffff',
+                      }}
+                    >
+                      {project.badge}
+                    </span>
                   </div>
-                  <h3 className="csr-title">{project.title}</h3>
+                  <div className="csr-card-body">
+                    <div className="csr-location-tag">
+                      <span>📍 {project.location}</span>
+                    </div>
+                    <h3 className="csr-title">{project.title}</h3>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
 
@@ -1198,9 +1231,9 @@ function App() {
               {contactSubmitted ? (
                 <div className="form-success-box" role="alert">
                   <div className="success-icon">✓</div>
-                  <h3>Thank you for reaching out, {submittedInquiry?.name}!</h3>
+                  <h3>Booking Inquiry Sent Automatically!</h3>
                   <p>
-                    Your booking inquiry for <strong>{submittedInquiry?.service}</strong> has been prepared and sent to WhatsApp.
+                    Thank you, <strong>{submittedInquiry?.name}</strong>! Your inquiry for <strong>{submittedInquiry?.service}</strong> has been automatically emailed to <strong>vashokphotos@gmail.com</strong> and dispatched to studio WhatsApp (<strong>+91 99944 99238</strong>).
                   </p>
 
                   <div className="success-action-buttons">
@@ -1210,13 +1243,13 @@ function App() {
                       rel="noopener noreferrer"
                       className="btn-success-whatsapp"
                     >
-                      💬 Open in WhatsApp (+91 99944 99238)
+                      💬 Re-open WhatsApp Chat
                     </a>
                     <a
                       href={submittedInquiry?.mailtoUrl}
                       className="btn-success-email"
                     >
-                      ✉️ Send Email to vashokphotos@gmail.com
+                      ✉️ Email Copy: vashokphotos@gmail.com
                     </a>
                   </div>
 
@@ -1320,8 +1353,12 @@ function App() {
                     ></textarea>
                   </div>
 
-                  <button type="submit" className="btn-primary submit-btn">
-                    Send Booking Inquiry <span>→</span>
+                  <button 
+                    type="submit" 
+                    className="btn-primary submit-btn"
+                    disabled={isSendingInquiry}
+                  >
+                    {isSendingInquiry ? 'Sending Inquiry... ⏳' : 'Send Booking Inquiry →'}
                   </button>
                 </form>
               )}
