@@ -29,7 +29,7 @@ const initialAlbums = defaultAlbumNames.map((name, albumIndex) => ({
 }))
 
 const appsScriptUrl = import.meta.env.VITE_APPS_SCRIPT_URL
-const driveCacheKey = 'anbudan-photos-drive-albums-v6'
+const driveCacheKey = 'anbudan-photos-drive-albums-v8'
 
 const loadDriveAlbums = async () => {
   if (!appsScriptUrl) return null
@@ -254,6 +254,8 @@ function ClientAvatar({ src, alt, fallbackInitials }) {
 
 function App() {
   const [albums, setAlbums] = useState(initialAlbums)
+  const [heroPhotos, setHeroPhotos] = useState([])
+  const [heroPhotoIndex, setHeroPhotoIndex] = useState(0)
   const [activeAlbum, setActiveAlbum] = useState(null)
   const [driveStatus, setDriveStatus] = useState('loading')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -275,6 +277,19 @@ function App() {
     if (driveData.error) {
       console.warn('Google Apps Script returned an error:', driveData.error)
       return null
+    }
+
+    // Extract Hero Photos if provided in response
+    if (driveData.heroPhotos && Array.isArray(driveData.heroPhotos)) {
+      const parsedHero = driveData.heroPhotos.map((p) => {
+        if (!p) return null
+        if (typeof p === 'string') return p
+        if (p.id) return `https://lh3.googleusercontent.com/d/${p.id}=w1600`
+        return p.url || ''
+      }).filter(Boolean)
+      if (parsedHero.length > 0) {
+        setHeroPhotos(parsedHero)
+      }
     }
 
     // Support direct array, or nested in { albums: [...] } or { data: [...] }
@@ -316,7 +331,7 @@ function App() {
     }
 
     // 2. If driveAlbums is an Object (folder names as keys: { "Wedding": [...], ... })
-    const keys = Object.keys(rawList).filter((k) => k !== 'error' && k !== 'status')
+    const keys = Object.keys(rawList).filter((k) => k !== 'error' && k !== 'status' && k !== 'heroPhotos')
     if (keys.length === 0) return null
 
     return keys.map((folderKey, index) => {
@@ -364,7 +379,7 @@ function App() {
         try {
           const parsed = JSON.parse(cached)
           const processed = processDriveData(parsed)
-          if (processed && processed.some((a) => a.photos.length > 0)) {
+          if (processed && processed.length > 0) {
             if (!cancelled) {
               setAlbums(processed)
               setDriveStatus('connected')
@@ -403,6 +418,21 @@ function App() {
       cancelled = true
     }
   }, [])
+
+  // Dynamic Hero Photo Carousel (uses Drive hero photos or all album covers)
+  const heroGallery = (heroPhotos && heroPhotos.length > 0)
+    ? heroPhotos
+    : albums.map((a) => a.cover).filter(Boolean)
+
+  useEffect(() => {
+    if (!heroGallery || heroGallery.length <= 1) return undefined
+
+    const timer = window.setInterval(() => {
+      setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)
+    }, 3500)
+
+    return () => window.clearInterval(timer)
+  }, [heroGallery])
 
   const handleContactChange = (e) => {
     setContactData({
@@ -540,74 +570,255 @@ function App() {
         <div className="ambient-glow glow-2" aria-hidden="true"></div>
         <div className="ambient-glow glow-3" aria-hidden="true"></div>
 
-        {/* Section 1: Home / Hero */}
-        <section id="home" className="hero-section">
-          {/* Floating Animated Lottie Animation in Hero Corner */}
-          <div className="hero-camera-floater" aria-hidden="true">
-            <div className="hero-cam-glow"></div>
-            <div className="hero-cam-body">
-              <dotlottie-player
-                src="https://lottie.host/5cb0779b-0163-4d4e-8668-1021743d6efc/o67qkEg6hM.lottie"
-                background="transparent"
-                speed="1"
-                style={{ width: '130px', height: '130px' }}
-                loop
-                autoplay
-              ></dotlottie-player>
-            </div>
-            <span className="hero-cam-label">LIVE SHOOT READY</span>
+        {/* Section 1: Home / Hero with Full-Bleed Background Carousel */}
+        <section id="home" className="hero-section hero-carousel-active">
+          {/* Full-Bleed Background Image Carousel */}
+          <div className="hero-full-carousel-bg" aria-hidden="true">
+            {heroGallery.length > 0 ? (
+              heroGallery.map((imgUrl, idx) => (
+                <div 
+                  key={imgUrl + idx}
+                  className={`hero-bg-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                >
+                  <img 
+                    src={imgUrl} 
+                    alt="Anbudan Photos cinematic showcase"
+                    className="hero-bg-img"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="hero-bg-slide is-active">
+                <img 
+                  src="/images/temple2.png" 
+                  alt="Anbudan Photos showcase"
+                  className="hero-bg-img"
+                />
+              </div>
+            )}
+            <div className="hero-full-carousel-overlay"></div>
           </div>
 
-          <div className="hero-content">
-            <div className="hero-eyebrow-wrapper">
-              <span className="eyebrow hero-eyebrow">
-                <span className="pulse-dot"></span> Creative Studio & Visual Archive
-              </span>
-            </div>
-            <h1 className="hero-title">
-              Crafting Timeless <span className="text-gradient">Visual Stories</span> For Every Milestone.
-            </h1>
-            <p className="hero-desc">
-              From sacred marriage muhurthams and grand temple festivals to vibrant birthday celebrations,
-              corporate galas, and heartfelt family moments — we preserve emotions that endure for generations.
-            </p>
-            <div className="hero-actions">
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={() => handleNavClick('services')}
+          {/* Hero Carousel Navigation Chevrons */}
+          {heroGallery.length > 1 && (
+            <>
+              <button 
+                type="button" 
+                className="hero-nav-arrow prev" 
+                onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
+                aria-label="Previous Hero Image"
               >
-                <span>Explore Services</span> <span className="btn-arrow">↓</span>
+                ‹
               </button>
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => handleNavClick('gallery')}
+              <button 
+                type="button" 
+                className="hero-nav-arrow next" 
+                onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
+                aria-label="Next Hero Image"
               >
-                <span>View Client Gallery</span> <span className="btn-arrow">↗</span>
+                ›
               </button>
+            </>
+          )}
+
+          <div className="hero-layout-grid">
+            {/* Left Column: Hero Text & Storytelling */}
+            <div className="hero-content">
+              <div className="hero-eyebrow-wrapper">
+                <span className="eyebrow hero-eyebrow">
+                  <span className="pulse-dot"></span> Photography & Cinematography Studio
+                </span>
+              </div>
+              <h1 className="hero-title">
+                Capturing Soulful Moments & <span className="text-gradient">Visual Legacies</span> Through Our Lens.
+              </h1>
+              <p className="hero-desc">
+                From sacred marriage muhurthams and grand temple festivals to vibrant birthday celebrations,
+                executive summits, and heartwarming family milestones — we craft authentic, heirloom-grade imagery that endures for generations.
+              </p>
+              <div className="hero-actions">
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => handleNavClick('gallery')}
+                >
+                  <span>Explore Client Gallery</span> <span className="btn-arrow">↗</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => handleNavClick('contact')}
+                >
+                  <span>Book a Shoot</span> <span className="btn-arrow">↓</span>
+                </button>
+              </div>
+
+              <div className="hero-stats-strip">
+                <div className="stat-pill">
+                  <div className="stat-glow"></div>
+                  <strong>500+</strong>
+                  <span>Celebrations Captured</span>
+                </div>
+                <div className="stat-pill">
+                  <div className="stat-glow"></div>
+                  <strong>10+</strong>
+                  <span>Years Behind The Lens</span>
+                </div>
+                <div className="stat-pill">
+                  <div className="stat-glow"></div>
+                  <strong>100%</strong>
+                  <span>Heartfelt Reviews</span>
+                </div>
+                <div className="stat-pill">
+                  <div className="stat-glow"></div>
+                  <strong>4K & Drone</strong>
+                  <span>Cinema-Grade Gear</span>
+                </div>
+              </div>
             </div>
 
-            <div className="hero-stats-strip">
-              <div className="stat-pill">
-                <div className="stat-glow"></div>
-                <strong>500+</strong>
-                <span>Events Documented</span>
+            {/* Right Column: Professional Camera Viewfinder HUD */}
+            <div className="hero-viewfinder-column">
+              <div className="camera-viewfinder-card">
+                {/* Camera Top HUD */}
+                <div className="viewfinder-hud-top">
+                  <div className="viewfinder-rec-badge">
+                    <span className="rec-dot"></span> REC 4K
+                  </div>
+                  <div className="viewfinder-mode">AF-C • EYE-AF TRACKING</div>
+                  <div className="viewfinder-battery">
+                    <span>BAT 98%</span>
+                    <span className="battery-icon">🔋</span>
+                  </div>
+                </div>
+
+                {/* Viewfinder Main Frame with Active Photo & Logo */}
+                <div className="viewfinder-media-stage viewfinder-carousel-stage">
+                  <div className="viewfinder-carousel-track">
+                    {heroGallery.length > 0 ? (
+                      heroGallery.map((imgUrl, idx) => (
+                        <div 
+                          key={imgUrl + idx}
+                          className={`viewfinder-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                        >
+                          <img 
+                            src={imgUrl} 
+                            alt="Anbudan Photos portfolio moment"
+                            className="viewfinder-carousel-img"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <div className="viewfinder-carousel-slide is-active">
+                        <img 
+                          src="/images/temple2.png" 
+                          alt="Anbudan Photos showcase"
+                          className="viewfinder-carousel-img"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dark Glassmorphism Studio Logo Overlay */}
+                  <div className="viewfinder-logo-overlay">
+                    <div className="viewfinder-logo-backdrop">
+                      <div className="viewfinder-logo-glow"></div>
+                      <img 
+                        src="/01 org.png" 
+                        alt="Anbudan Photos official studio logo"
+                        className="viewfinder-brand-logo"
+                      />
+                      <div className="viewfinder-logo-text">
+                        <span className="brand-name">ANBUDAN PHOTOS</span>
+                        <span className="brand-sub">STUDIO & CINEMATOGRAPHY</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Focus Brackets & Reticle */}
+                  <div className="viewfinder-corner top-left"></div>
+                  <div className="viewfinder-corner top-right"></div>
+                  <div className="viewfinder-corner bottom-left"></div>
+                  <div className="viewfinder-corner bottom-right"></div>
+
+                  <div className="viewfinder-crosshair">
+                    <div className="crosshair-box">
+                      <span className="focus-lock-text">[ AF LOCK ]</span>
+                    </div>
+                  </div>
+
+                  <div className="viewfinder-badge-tag">
+                    <span>📸 LIVE REEL • {heroGallery.length > 0 ? `${heroPhotoIndex + 1}/${heroGallery.length}` : 'STUDIO'}</span>
+                  </div>
+                </div>
+
+                {/* Camera Bottom Lens Telemetry */}
+                <div className="viewfinder-hud-bottom">
+                  <span className="hud-telemetry"><strong>f/1.4</strong> APERTURE</span>
+                  <span className="hud-telemetry"><strong>1/1600s</strong> SHUTTER</span>
+                  <span className="hud-telemetry"><strong>ISO 100</strong> SENSITIVITY</span>
+                  <span className="hud-telemetry"><strong>85mm GM</strong> PRIME LENS</span>
+                </div>
               </div>
-              <div className="stat-pill">
-                <div className="stat-glow"></div>
-                <strong>10+</strong>
-                <span>Years of Artistry</span>
+            </div>
+          </div>
+
+          {/* Hero Carousel Dots Indicator */}
+          {heroGallery.length > 1 && (
+            <div className="hero-carousel-dots" aria-label="Hero Slide Indicators">
+              {heroGallery.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`hero-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                  onClick={() => setHeroPhotoIndex(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Photography Studio Gear & Artistry Strip */}
+          <div className="photo-gear-marquee-strip" aria-label="Studio Gear and Capabilities">
+            <div className="gear-item">
+              <span className="gear-icon">📷</span>
+              <div className="gear-text">
+                <strong>Full-Frame Cinema</strong>
+                <span>Sony FX3 & Alpha Series</span>
               </div>
-              <div className="stat-pill">
-                <div className="stat-glow"></div>
-                <strong>100%</strong>
-                <span>Delighted Clients</span>
+            </div>
+            <div className="gear-divider"></div>
+            <div className="gear-item">
+              <span className="gear-icon">🔭</span>
+              <div className="gear-text">
+                <strong>Prime G-Master Lenses</strong>
+                <span>f/1.2 & f/1.4 Portrait Optics</span>
               </div>
-              <div className="stat-pill">
-                <div className="stat-glow"></div>
-                <strong>4K & Drone</strong>
-                <span>Ultra-HD Coverage</span>
+            </div>
+            <div className="gear-divider"></div>
+            <div className="gear-item">
+              <span className="gear-icon">🚁</span>
+              <div className="gear-text">
+                <strong>Cinematic Aerials</strong>
+                <span>4K HDR Drone Perspectives</span>
+              </div>
+            </div>
+            <div className="gear-divider"></div>
+            <div className="gear-item">
+              <span className="gear-icon">💡</span>
+              <div className="gear-text">
+                <strong>Master Studio Strobes</strong>
+                <span>High-Speed Sync Lighting</span>
+              </div>
+            </div>
+            <div className="gear-divider"></div>
+            <div className="gear-item">
+              <span className="gear-icon">📖</span>
+              <div className="gear-text">
+                <strong>Handcrafted Albums</strong>
+                <span>Fine-Art Archival Prints</span>
               </div>
             </div>
           </div>
