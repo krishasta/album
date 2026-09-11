@@ -1,6 +1,7 @@
 function CardAlbum({ album, index, total = 10, onOpen, isLoading }) {
   const stepNumber = String(index + 1).padStart(2, '0')
-  const stepTitle = album.title || album.name || `Album ${stepNumber}`
+  // Use the exact folder name from Google Drive
+  const albumName = album.name || album.title || `Album ${stepNumber}`
 
   return (
     <div 
@@ -15,19 +16,19 @@ function CardAlbum({ album, index, total = 10, onOpen, isLoading }) {
           className={`curved-3d-card card-item-${index + 1} ${isLoading ? 'is-loading' : ''}`}
           type="button"
           onClick={() => onOpen(album)}
-          aria-label={`Open ${album.name}`}
+          aria-label={`Open ${albumName}`}
         >
           <div className="curved-card-media">
             {album.cover ? (
               <img 
                 src={album.cover} 
-                alt={`${album.name} cover`} 
+                alt={`${albumName} cover`} 
                 referrerPolicy="no-referrer"
                 loading="eager"
               />
             ) : (
               <div className="curved-card-placeholder">
-                <span className="placeholder-text">{album.name}</span>
+                <span className="placeholder-text">{albumName}</span>
               </div>
             )}
             <div className="curved-card-overlay">
@@ -41,14 +42,11 @@ function CardAlbum({ album, index, total = 10, onOpen, isLoading }) {
 
       <div className="curved-card-meta">
         <span className="curved-step-badge">#{stepNumber}</span>
-        <strong className="curved-step-title">{stepTitle}</strong>
-        <span className="curved-album-sub">{album.photos?.length ? `${album.photos.length} Photos` : album.name}</span>
+        <strong className="curved-step-title" title={albumName}>{albumName}</strong>
+        <span className="curved-album-sub">{album.photos?.length ? `${album.photos.length} Photos` : '0 Photos'}</span>
       </div>
     </div>
   )
 }
 
 export default CardAlbum
-
-
-

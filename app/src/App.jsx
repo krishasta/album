@@ -7,15 +7,29 @@ import PhotographerWidget from './components/PhotographerWidget.jsx'
 const albumCount = 10
 const photosPerAlbum = 10
 
-const initialAlbums = Array.from({ length: albumCount }, (_, albumIndex) => ({
-  name: `album-${albumIndex + 1}`,
+const defaultAlbumNames = [
+  'Weddings & Marriages',
+  'Temple Kumbhabhishekham',
+  'Pre-Wedding Shoots',
+  'Birthday Celebrations',
+  'Corporate Summits',
+  'Baby Shower & Maternity',
+  'Family Milestones',
+  'Spiritual Devasthanams',
+  'Cinematography & Drone',
+  'CSR & Community Impact',
+]
+
+const initialAlbums = defaultAlbumNames.map((name, albumIndex) => ({
+  name: name,
+  title: name,
   style: albumIndex + 1,
   cover: '',
   photos: [],
 }))
 
 const appsScriptUrl = import.meta.env.VITE_APPS_SCRIPT_URL
-const driveCacheKey = 'anbudan-photos-drive-albums-v3'
+const driveCacheKey = 'anbudan-photos-drive-albums-v6'
 
 const loadDriveAlbums = async () => {
   if (!appsScriptUrl) return null
@@ -107,15 +121,7 @@ const csrProjectsData = [
     category: 'Tribal Community Empowerment',
     badge: 'Tribal Welfare',
     badgeColor: '#16a34a',
-    icon: '🌿',
-    description: 'Comprehensive visual documentation of indigenous community health camps, tribal education initiatives, clean water access, and livelihood empowerment in Gethaikadu tribal settlements.',
-    highlights: [
-      'Field Healthcare & Nutrition Camps',
-      'Tribal Youth Education Support',
-      'Indigenous Cultural Heritage Archives',
-      'Corporate Donor Impact Photo Reports',
-    ],
-    stats: { impact: '1,200+ Beneficiaries', coverage: 'Full Documentary & Aerials' },
+    image: '/images/csr_tribal.jpg',
   },
   {
     id: 'semmozhi-poonga',
@@ -124,15 +130,7 @@ const csrProjectsData = [
     category: 'Eco-Restoration & Green Heritage',
     badge: 'Urban Biodiversity',
     badgeColor: '#059669',
-    icon: '🌳',
-    description: 'In-depth visual documentation of ecological conservation, botanical park development, corporate tree plantation drives, and public environmental heritage at Semmozhi Poonga.',
-    highlights: [
-      'Eco-Habitat Restoration Documentation',
-      'Corporate Greening & Plantation Drives',
-      'Public Environmental Education Archives',
-      '4K Cinematic Drone Aerial Mapping',
-    ],
-    stats: { impact: '50+ Acres Green Space', coverage: '4K Drone & Time-lapse' },
+    image: '/images/csr_semmozhi.jpg',
   },
   {
     id: 'anganwadi-model',
@@ -141,15 +139,7 @@ const csrProjectsData = [
     category: 'Early Childhood Care & Infrastructure',
     badge: 'Childhood Nutrition',
     badgeColor: '#0284c7',
-    icon: '🏫',
-    description: 'Capturing the transformation of model Anganwadis — smart learning spaces, child nutrition drives, hygienic sanitation upgrades, and mother & child healthcare milestone stories.',
-    highlights: [
-      'Smart Classroom & Play Infrastructure',
-      'Child Nutrition & Growth Monitoring',
-      'Mother & Child Wellness Documentation',
-      'Comprehensive CSR Audit Photo Story',
-    ],
-    stats: { impact: '30+ Model Centers', coverage: 'Multi-Location Field Coverage' },
+    image: '/images/csr_anganwadi.jpg',
   },
 ]
 
@@ -280,24 +270,21 @@ function App() {
 
   const closeAlbum = () => setActiveAlbum(null)
 
-  const formatAlbumTitle = (name) => {
-    if (!name) return ''
-    if (/^album[-_\s]?\d+$/i.test(name)) {
-      const num = name.match(/\d+/)?.[0] || '1'
-      return `Album ${String(num).padStart(2, '0')}`
+  const processDriveData = (driveData) => {
+    if (!driveData || typeof driveData !== 'object') return null
+    if (driveData.error) {
+      console.warn('Google Apps Script returned an error:', driveData.error)
+      return null
     }
-    return name
-      .replace(/[-_]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-  }
 
-  const processDriveData = (driveAlbums) => {
-    if (!driveAlbums || typeof driveAlbums !== 'object') return null
+    // Support direct array, or nested in { albums: [...] } or { data: [...] }
+    const rawList = Array.isArray(driveData)
+      ? driveData
+      : (driveData.albums || driveData.data || driveData)
 
     // 1. If driveAlbums is an Array of albums
-    if (Array.isArray(driveAlbums)) {
-      return driveAlbums.map((item, index) => {
+    if (Array.isArray(rawList)) {
+      return rawList.map((item, index) => {
         const rawPhotos = item.photos || (Array.isArray(item) ? item : [])
         const photoItems = (rawPhotos || []).map((photo) => {
           if (!photo) return null
@@ -316,63 +303,31 @@ function App() {
           }
         }).filter((p) => p && p.url)
 
-        const folderName = item.name || item.title || `album-${index + 1}`
+        // Exact folder name from Google Drive
+        const folderName = item.name || item.folderName || item.title || item.albumName || `Album ${index + 1}`
         return {
           name: folderName,
-          title: formatAlbumTitle(folderName),
-          style: (index % albumCount) + 1,
-          photos: photoItems.slice(0, photosPerAlbum),
+          title: folderName,
+          style: (index % 10) + 1,
+          photos: photoItems,
           cover: photoItems[0]?.url || item.cover || '',
         }
       })
     }
 
-    // 2. If driveAlbums is an Object
-    const keys = Object.keys(driveAlbums)
-    const matchesInitial = initialAlbums.some(
-      (a) => a.name in driveAlbums || a.name.toLowerCase() in driveAlbums
-    )
+    // 2. If driveAlbums is an Object (folder names as keys: { "Wedding": [...], ... })
+    const keys = Object.keys(rawList).filter((k) => k !== 'error' && k !== 'status')
+    if (keys.length === 0) return null
 
-    if (matchesInitial) {
-      return initialAlbums.map((album) => {
-        const rawValue = driveAlbums[album.name] || driveAlbums[album.name.toLowerCase()] || []
-        const isObj = rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)
-        const rawPhotos = isObj ? (rawValue.photos || []) : rawValue
-        const customTitle = isObj ? (rawValue.name || rawValue.title) : null
-
-        const photoItems = (rawPhotos || []).map((photo) => {
-          if (!photo) return null
-          if (typeof photo === 'string') return { url: photo, name: '' }
-          if (photo.id) {
-            return {
-              id: photo.id,
-              url: `https://lh3.googleusercontent.com/d/${photo.id}=w1600`,
-              name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
-            }
-          }
-          return {
-            id: photo.id || '',
-            url: photo.url || '',
-            name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
-          }
-        }).filter((p) => p && p.url)
-
-        return {
-          ...album,
-          title: formatAlbumTitle(customTitle || album.name),
-          photos: photoItems.slice(0, photosPerAlbum),
-          cover: photoItems[0]?.url || '',
-        }
-      })
-    }
-
-    // 3. Otherwise, use all the folder keys directly from Drive
-    return keys.map((folderName, index) => {
-      const rawValue = driveAlbums[folderName]
+    return keys.map((folderKey, index) => {
+      const rawValue = rawList[folderKey]
       const isObj = rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)
       const rawPhotos = isObj ? (rawValue.photos || []) : (Array.isArray(rawValue) ? rawValue : [])
+      const rawFolderName = (isObj && (rawValue.name || rawValue.folderName || rawValue.title || rawValue.albumName))
+        ? (rawValue.name || rawValue.folderName || rawValue.title || rawValue.albumName)
+        : folderKey
 
-      const photoItems = rawPhotos.map((photo) => {
+      const photoItems = (rawPhotos || []).map((photo) => {
         if (!photo) return null
         if (typeof photo === 'string') return { url: photo, name: '' }
         if (photo.id) {
@@ -390,11 +345,11 @@ function App() {
       }).filter((p) => p && p.url)
 
       return {
-        name: folderName,
-        title: formatAlbumTitle(folderName),
-        style: (index % albumCount) + 1,
-        photos: photoItems.slice(0, photosPerAlbum),
-        cover: photoItems[0]?.url || '',
+        name: rawFolderName,
+        title: rawFolderName,
+        style: (index % 10) + 1,
+        photos: photoItems,
+        cover: photoItems[0]?.url || (isObj ? rawValue.cover : '') || '',
       }
     })
   }
@@ -425,9 +380,9 @@ function App() {
         const driveAlbums = await loadDriveAlbums()
         if (cancelled) return
 
-        if (driveAlbums && typeof driveAlbums === 'object') {
+        if (driveAlbums && typeof driveAlbums === 'object' && !driveAlbums.error) {
           const processed = processDriveData(driveAlbums)
-          if (processed && processed.some((a) => a.photos.length > 0)) {
+          if (processed && processed.length > 0) {
             setAlbums(processed)
             setDriveStatus('connected')
             window.localStorage.setItem(driveCacheKey, JSON.stringify(driveAlbums))
@@ -766,51 +721,28 @@ function App() {
             {csrProjectsData.map((project) => (
               <div className="csr-card" key={project.id}>
                 <div className="csr-card-glow" aria-hidden="true"></div>
-                <div className="csr-card-header">
-                  <div className="csr-icon-box">
-                    <span className="csr-icon" role="img" aria-hidden="true">{project.icon}</span>
-                  </div>
-                  <span className="csr-badge" style={{ backgroundColor: `${project.badgeColor}15`, color: project.badgeColor, borderColor: `${project.badgeColor}40` }}>
+                <div className="csr-image-wrap">
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="csr-card-img"
+                    loading="lazy"
+                  />
+                  <span
+                    className="csr-image-badge"
+                    style={{
+                      backgroundColor: `${project.badgeColor}ea`,
+                      color: '#ffffff',
+                    }}
+                  >
                     {project.badge}
                   </span>
                 </div>
-                <div className="csr-location-tag">
-                  <span>📍 {project.location}</span>
-                </div>
-                <h3 className="csr-title">{project.title}</h3>
-                <p className="csr-desc">{project.description}</p>
-
-                <div className="csr-highlights-box">
-                  <span className="highlights-title">Key Documentation Focus:</span>
-                  <ul className="csr-highlights-list">
-                    {project.highlights.map((item, idx) => (
-                      <li key={idx}>
-                        <span className="csr-bullet" style={{ backgroundColor: project.badgeColor }}></span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="csr-stats-strip">
-                  <div className="csr-stat-item">
-                    <span className="csr-stat-label">Impact Scope</span>
-                    <strong className="csr-stat-val">{project.stats.impact}</strong>
+                <div className="csr-card-body">
+                  <div className="csr-location-tag">
+                    <span>📍 {project.location}</span>
                   </div>
-                  <div className="csr-stat-item">
-                    <span className="csr-stat-label">Deliverables</span>
-                    <strong className="csr-stat-val">{project.stats.coverage}</strong>
-                  </div>
-                </div>
-
-                <div className="csr-card-footer">
-                  <button
-                    type="button"
-                    className="csr-inquire-btn"
-                    onClick={() => selectServiceForInquiry(project.title)}
-                  >
-                    Request CSR Documentation <span>→</span>
-                  </button>
+                  <h3 className="csr-title">{project.title}</h3>
                 </div>
               </div>
             ))}
@@ -820,10 +752,10 @@ function App() {
         {/* Section 5: Customer Reviews & Client Stories */}
         <section id="customers" className="section-block customers-section">
           <div className="section-header">
-            <p className="section-kicker">Client Love & Testimonials</p>
-            <h2 className="section-title">Customer Stories & Cherished Moments</h2>
+            <p className="section-kicker">Our Esteemed Clients</p>
+            <h2 className="section-title">Valued Clients & Organizations</h2>
             <p className="section-subtitle">
-              Hear from sacred temple trusts, couples, families, and corporate foundations who trusted us to capture their life-defining milestones.
+              Proud partners and visual chroniclers for premier institutions, enterprises, and sacred devasthanams.
             </p>
           </div>
 
@@ -854,30 +786,18 @@ function App() {
 
           <div className="customers-grid">
             {customerReviewsData
-              .filter((review) => customerFilter === 'all' || review.category === customerFilter)
-              .map((review) => (
-                <div className="customer-card" key={review.id}>
-                  <div className="customer-quote-icon">“</div>
-                  <div className="customer-rating" aria-label={`${review.rating} out of 5 stars`}>
-                    {Array.from({ length: review.rating }).map((_, i) => (
-                      <span key={i} className="star-icon">★</span>
-                    ))}
+              .filter((client) => customerFilter === 'all' || client.category === customerFilter)
+              .map((client) => (
+                <div className="customer-card" key={client.id}>
+                  <div className="customer-avatar-wrap">
+                    <ClientAvatar
+                      src={client.image}
+                      alt={client.name}
+                      fallbackInitials={client.fallbackInitials}
+                    />
                   </div>
-                  <p className="customer-review-text">"{review.review}"</p>
-
-                  <div className="customer-profile">
-                    <div className="customer-avatar-wrap">
-                      <ClientAvatar
-                        src={review.image}
-                        alt={review.name}
-                        fallbackInitials={review.fallbackInitials}
-                      />
-                    </div>
-                    <div className="customer-meta">
-                      <h4 className="customer-name">{review.name}</h4>
-                      <span className="customer-event-tag">{review.event}</span>
-                      <span className="customer-loc">📍 {review.location}</span>
-                    </div>
+                  <div className="customer-meta">
+                    <h4 className="customer-name">{client.name}</h4>
                   </div>
                 </div>
               ))}

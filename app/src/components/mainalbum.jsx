@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react'
 
-const photosPerAlbum = 10
-
 function MainAlbum({ album, onClose }) {
   const [activePhoto, setActivePhoto] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
 
-  const showNext = () => setActivePhoto((photo) => (photo + 1) % photosPerAlbum)
-  const showPrevious = () => setActivePhoto((photo) => (photo - 1 + photosPerAlbum) % photosPerAlbum)
+  const totalPhotos = album.photos && album.photos.length > 0 ? album.photos.length : 1
+
+  const showNext = () => setActivePhoto((photo) => (photo + 1) % totalPhotos)
+  const showPrevious = () => setActivePhoto((photo) => (photo - 1 + totalPhotos) % totalPhotos)
+
   const getSlideOffset = (index) => {
     let offset = index - activePhoto
-    if (offset > photosPerAlbum / 2) offset -= photosPerAlbum
-    if (offset < -photosPerAlbum / 2) offset += photosPerAlbum
+    if (offset > totalPhotos / 2) offset -= totalPhotos
+    if (offset < -totalPhotos / 2) offset += totalPhotos
     return offset
   }
 
@@ -23,38 +24,37 @@ function MainAlbum({ album, onClose }) {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+  }, [onClose, totalPhotos])
 
   useEffect(() => {
-    if (isPaused) return undefined
+    if (isPaused || totalPhotos <= 1) return undefined
 
     const timer = window.setInterval(() => {
-      setActivePhoto((photo) => (photo + 1) % photosPerAlbum)
+      setActivePhoto((photo) => (photo + 1) % totalPhotos)
     }, 3500)
 
     return () => window.clearInterval(timer)
-  }, [isPaused])
+  }, [isPaused, totalPhotos])
 
-  const currentPhoto = album.photos[activePhoto]
-  const currentPhotoName = typeof currentPhoto === 'object' ? currentPhoto?.name : ''
+  // Exact Google Drive folder name
+  const albumDisplayName = album.name || album.title || 'Album Gallery'
 
   return (
-    <div className="viewer-backdrop" role="dialog" aria-modal="true" aria-label={`${album.name} photo viewer`} onClick={onClose}>
-      <div className={`viewer album-style-${album.style}`} onClick={(event) => event.stopPropagation()}>
+    <div className="viewer-backdrop" role="dialog" aria-modal="true" aria-label={`${albumDisplayName} photo viewer`} onClick={onClose}>
+      <div className={`viewer album-style-${album.style || 1}`} onClick={(event) => event.stopPropagation()}>
         <div className="viewer-topbar">
           <div className="viewer-title-box">
-            <p className="eyebrow">{album.name} <span>•</span> Photo {activePhoto + 1} of {album.photos?.length || photosPerAlbum}</p>
-            <h2 className="viewer-photo-title">{currentPhotoName || `Photograph ${String(activePhoto + 1).padStart(2, '0')}`}</h2>
+            <p className="eyebrow">Client Album <span>•</span> Photo {activePhoto + 1} of {totalPhotos}</p>
+            <h2 className="viewer-photo-title">{albumDisplayName}</h2>
           </div>
           <button className="close-button" type="button" onClick={onClose} aria-label="Close album">Close <span aria-hidden="true">×</span></button>
         </div>
         <div className="carousel" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
           <div className="carousel-stage">
-            {album.photos.map((photo, index) => {
+            {album.photos && album.photos.map((photo, index) => {
               const offset = getSlideOffset(index)
               if (Math.abs(offset) > 2) return null
               const photoUrl = typeof photo === 'string' ? photo : photo?.url
-              const photoName = typeof photo === 'object' ? photo?.name : ''
 
               return (
                 <button
@@ -62,29 +62,36 @@ function MainAlbum({ album, onClose }) {
                   type="button"
                   key={(photoUrl || index) + index}
                   onClick={() => setActivePhoto(index)}
-                  aria-label={`View photograph ${index + 1}${photoName ? `: ${photoName}` : ''}`}
+                  aria-label={`View photograph ${index + 1} of ${totalPhotos}`}
                 >
                   <img
                     src={photoUrl}
-                    alt={photoName || `${album.name}, photograph ${index + 1}`}
+                    alt={`${albumDisplayName}, photo ${index + 1}`}
                     referrerPolicy="no-referrer"
                   />
-                  {photoName && (
-                    <div className="slide-name-overlay">
-                      <span>{photoName}</span>
-                    </div>
-                  )}
                 </button>
               )
             })}
           </div>
-          <button className="carousel-button previous" type="button" onClick={showPrevious} aria-label="Previous photograph">←</button>
-          <button className="carousel-button next" type="button" onClick={showNext} aria-label="Next photograph">→</button>
+          {totalPhotos > 1 && (
+            <>
+              <button className="carousel-button previous" type="button" onClick={showPrevious} aria-label="Previous photograph">←</button>
+              <button className="carousel-button next" type="button" onClick={showNext} aria-label="Next photograph">→</button>
+            </>
+          )}
         </div>
         <div className="viewer-controls">
-          <span>{String(activePhoto + 1).padStart(2, '0')} <i>/</i> {String(album.photos?.length || photosPerAlbum).padStart(2, '0')}</span>
-          <div className="progress-dots" aria-label={`Photograph ${activePhoto + 1} of ${album.photos?.length || photosPerAlbum}`}>
-            {album.photos.map((_, index) => <button className={index === activePhoto ? 'is-active' : ''} type="button" key={index} onClick={() => setActivePhoto(index)} aria-label={`View photograph ${index + 1}`} />)}
+          <span>{String(activePhoto + 1).padStart(2, '0')} <i>/</i> {String(totalPhotos).padStart(2, '0')}</span>
+          <div className="progress-dots" aria-label={`Photograph ${activePhoto + 1} of ${totalPhotos}`}>
+            {album.photos && album.photos.map((_, index) => (
+              <button
+                className={index === activePhoto ? 'is-active' : ''}
+                type="button"
+                key={index}
+                onClick={() => setActivePhoto(index)}
+                aria-label={`View photograph ${index + 1}`}
+              />
+            ))}
           </div>
           <span className="hint">Use arrow keys to navigate</span>
         </div>
