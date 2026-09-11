@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './App.css'
 import CardAlbum from './components/cardalbum.jsx'
 import MainAlbum from './components/mainalbum.jsx'
@@ -424,6 +424,37 @@ function App() {
     ? heroPhotos
     : albums.map((a) => a.cover).filter(Boolean)
 
+  const topCarouselRef = useRef(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      if (topCarouselRef.current?.requestFullscreen) {
+        topCarouselRef.current.requestFullscreen()
+      } else if (topCarouselRef.current?.webkitRequestFullscreen) {
+        topCarouselRef.current.webkitRequestFullscreen()
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen()
+      }
+    }
+  }
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement || document.webkitFullscreenElement))
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+    }
+  }, [])
+
   useEffect(() => {
     if (!heroGallery || heroGallery.length <= 1) return undefined
 
@@ -547,12 +578,12 @@ function App() {
           </a>
 
           <div className={`nav-links ${menuOpen ? 'is-open' : ''}`}>
-            <a href="#home" onClick={(e) => { e.preventDefault(); handleNavClick('home') }}>Home</a>
-            <a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Services</a>
             <a href="#gallery" onClick={(e) => { e.preventDefault(); handleNavClick('gallery') }}>Gallery</a>
+            <a href="#home" onClick={(e) => { e.preventDefault(); handleNavClick('home') }}>About Studio</a>
+            <a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Services</a>
             {/* <a href="#csr" onClick={(e) => { e.preventDefault(); handleNavClick('csr') }}>CSR Impact</a> */}
             <a href="#customers" onClick={(e) => { e.preventDefault(); handleNavClick('customers') }}>Customers</a>
-            <a href="#about" onClick={(e) => { e.preventDefault(); handleNavClick('about') }}>About Us</a>
+            <a href="#about" onClick={(e) => { e.preventDefault(); handleNavClick('about') }}>Why Us</a>
             <a href="#contact" onClick={(e) => { e.preventDefault(); handleNavClick('contact') }}>Contact</a>
             <button
               className="nav-cta-btn"
@@ -577,94 +608,167 @@ function App() {
         </div>
       </nav>
 
+      {/* Full-Screen Pure Photo Showcase Carousel (Edge-to-Edge & 100% Uncropped) */}
+      <section 
+        className={`top-carousel-section ${isFullscreen ? 'is-fullscreen' : ''}`} 
+        aria-label="Featured Photography Reel"
+        ref={topCarouselRef}
+      >
+        <div className="top-carousel-wrapper">
+          {/* Top Floating Fullscreen Button */}
+          <button
+            type="button"
+            className="top-carousel-fullscreen-btn"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            title={isFullscreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen View"}
+          >
+            {isFullscreen ? (
+              <>
+                <span className="fs-icon">✕</span>
+                <span className="fs-label">Exit Fullscreen</span>
+              </>
+            ) : (
+              <>
+                <span className="fs-icon">⛶</span>
+                <span className="fs-label">Full Screen</span>
+              </>
+            )}
+          </button>
+
+          <div className="top-carousel-track">
+            {heroGallery.length > 0 ? (
+              heroGallery.map((imgUrl, idx) => (
+                <div
+                  key={imgUrl + idx}
+                  className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                >
+                  <div 
+                    className="top-carousel-slide-bg"
+                    style={{ backgroundImage: `url(${imgUrl})` }}
+                    aria-hidden="true"
+                  />
+                  <img
+                    src={imgUrl}
+                    alt={`Anbudan Photos showcase ${idx + 1}`}
+                    className="top-carousel-img"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="top-carousel-slide is-active">
+                <div 
+                  className="top-carousel-slide-bg"
+                  style={{ backgroundImage: `url(/images/temple2.png)` }}
+                  aria-hidden="true"
+                />
+                <img
+                  src="/images/temple2.png"
+                  alt="Anbudan Photos showcase"
+                  className="top-carousel-img"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Discrete Bottom Slide Dots */}
+          {heroGallery.length > 1 && (
+            <div className="top-carousel-dots-bar">
+              <div className="top-carousel-dots">
+                {heroGallery.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                    onClick={() => setHeroPhotoIndex(idx)}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Subtle Navigation Chevrons */}
+          {heroGallery.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="top-carousel-arrow prev"
+                onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
+                aria-label="Previous Slide"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="top-carousel-arrow next"
+                onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
+                aria-label="Next Slide"
+              >
+                ›
+              </button>
+            </>
+          )}
+        </div>
+      </section>
+
       <main className="app-shell">
         {/* Background Ambient Light Orbs */}
         <div className="ambient-glow glow-1" aria-hidden="true"></div>
         <div className="ambient-glow glow-2" aria-hidden="true"></div>
         <div className="ambient-glow glow-3" aria-hidden="true"></div>
 
-        {/* Dedicated Top Showcase Carousel Section */}
-        <section className="top-carousel-section" aria-label="Featured Photography Reel">
-          <div className="top-carousel-wrapper">
-            <div className="top-carousel-track">
-              {heroGallery.length > 0 ? (
-                heroGallery.map((imgUrl, idx) => (
-                  <div
-                    key={imgUrl + idx}
-                    className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                  >
-                    <img
-                      src={imgUrl}
-                      alt="Anbudan Photos featured moment"
-                      className="top-carousel-img"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                ))
-              ) : (
-                <div className="top-carousel-slide is-active">
-                  <img
-                    src="/images/temple2.png"
-                    alt="Anbudan Photos showcase"
-                    className="top-carousel-img"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Cinematic Gradient Caption & Controls Overlay */}
-            <div className="top-carousel-overlay">
-              <div className="top-carousel-caption">
-                <span className="top-carousel-tag">
-                  <span className="live-dot"></span> LIVE REEL ARCHIVE
-                </span>
-                <h2 className="top-carousel-title">Moments of Pure Celebration & Heritage</h2>
-                <p className="top-carousel-subtitle">Live from Google Drive Studio Archive • 4K High-Resolution Highlights</p>
+        {/* Section 1: Gallery (Client Gallery Archive & Live Drive Viewer) */}
+        <section id="gallery" className="section-block gallery-section">
+          <div className="section-header">
+            <div className="gallery-header-meta">
+              <div>
+                <p className="section-kicker">Client Gallery Archive</p>
+                <h2 className="section-title">Moments, carefully kept.</h2>
               </div>
-
-              <div className="top-carousel-controls">
-                <span className="top-carousel-counter">
-                  <strong>{String(heroPhotoIndex + 1).padStart(2, '0')}</strong> / {String(heroGallery.length || 1).padStart(2, '0')}
-                </span>
-                <div className="top-carousel-dots">
-                  {heroGallery.map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                      onClick={() => setHeroPhotoIndex(idx)}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
+              <p className="album-count">
+                {albums.length} albums <span>/</span> {albums.reduce((acc, curr) => acc + (curr.photos?.length || 0), 0) || (albumCount * photosPerAlbum)} curated photos
+              </p>
             </div>
+            <p className="section-subtitle">
+              Browse interactive live showcase albums. Click any album below to open the immersive full-screen photo viewer.
+            </p>
+          </div>
 
-            {/* Dedicated Top Carousel Chevrons */}
-            {heroGallery.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className="top-carousel-arrow prev"
-                  onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
-                  aria-label="Previous Slide"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  className="top-carousel-arrow next"
-                  onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
-                  aria-label="Next Slide"
-                >
-                  ›
-                </button>
-              </>
-            )}
+          {driveStatus === 'loading' && (
+            <div className="drive-banner drive-loading-box">
+              <span className="spinner-indicator"></span>
+              <p className="drive-loading" role="status">
+                Connecting to Google Drive photo storage<span>...</span>
+              </p>
+            </div>
+          )}
+          {driveStatus === 'fallback' && (
+            <div className="drive-banner drive-notice-box">
+              <p className="drive-notice">
+                Showing preview gallery structure. Connect Apps Script to sync real-time Drive folders.
+              </p>
+            </div>
+          )}
+
+          <div className="gallery-grid-container" aria-label="Photo albums">
+            <div className="gallery-album-grid">
+              {albums.map((album, index) => (
+                <CardAlbum
+                  album={album}
+                  index={index}
+                  total={albums.length}
+                  onOpen={setActiveAlbum}
+                  isLoading={driveStatus === 'loading' && !album.cover}
+                  key={album.name || index}
+                />
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Section 1: Home / Hero Studio Overview */}
+        {/* Section 2: Home / Hero Studio Overview */}
         <section id="home" className="hero-section">
           <div className="hero-layout-grid">
             {/* Left Column: Hero Text & Storytelling */}
@@ -767,7 +871,7 @@ function App() {
           </div>
         </section>
 
-        {/* Section 2: Services */}
+        {/* Section 3: Services */}
         <section id="services" className="section-block services-section">
           <div className="section-header">
             <p className="section-kicker">What We Do</p>
@@ -808,55 +912,6 @@ function App() {
                 </div>
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* Section 3: Gallery (3D Curved Amphitheater & Drive Viewer) */}
-        <section id="gallery" className="section-block gallery-section">
-          <div className="section-header">
-            <div className="gallery-header-meta">
-              <div>
-                <p className="section-kicker">Client Gallery Archive</p>
-                <h2 className="section-title">Moments, carefully kept.</h2>
-              </div>
-              <p className="album-count">
-                {albums.length} albums <span>/</span> {albums.reduce((acc, curr) => acc + (curr.photos?.length || 0), 0) || (albumCount * photosPerAlbum)} curated photos
-              </p>
-            </div>
-            <p className="section-subtitle">
-              Browse interactive live showcase albums. Click any album below to open the immersive full-screen photo viewer.
-            </p>
-          </div>
-
-          {driveStatus === 'loading' && (
-            <div className="drive-banner drive-loading-box">
-              <span className="spinner-indicator"></span>
-              <p className="drive-loading" role="status">
-                Connecting to Google Drive photo storage<span>...</span>
-              </p>
-            </div>
-          )}
-          {driveStatus === 'fallback' && (
-            <div className="drive-banner drive-notice-box">
-              <p className="drive-notice">
-                Showing preview gallery structure. Connect Apps Script to sync real-time Drive folders.
-              </p>
-            </div>
-          )}
-
-          <div className="gallery-grid-container" aria-label="Photo albums">
-            <div className="gallery-album-grid">
-              {albums.map((album, index) => (
-                <CardAlbum
-                  album={album}
-                  index={index}
-                  total={albums.length}
-                  onOpen={setActiveAlbum}
-                  isLoading={driveStatus === 'loading' && !album.cover}
-                  key={album.name || index}
-                />
-              ))}
-            </div>
           </div>
         </section>
 

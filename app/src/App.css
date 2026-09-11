@@ -412,24 +412,82 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ==========================================================================
-/* ==========================================================================
-   2.5 DEDICATED TOP CAROUSEL SHOWCASE SECTION
+   2.5 FULL-SCREEN PURE PHOTO SHOWCASE CAROUSEL (Edge-to-Edge & 100% Uncropped)
    ========================================================================== */
 .top-carousel-section {
   width: 100%;
-  padding: 16px 0 28px;
+  padding: 0;
+  margin: 0;
   position: relative;
+  background: #000000;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .top-carousel-wrapper {
   position: relative;
   width: 100%;
-  height: clamp(380px, 52vh, 560px);
-  border-radius: var(--radius-xl);
+  height: calc(100vh - var(--nav-height, 76px));
+  min-height: 520px;
   overflow: hidden;
-  background: #090d16;
-  box-shadow: var(--shadow-xl), 0 20px 50px rgba(0, 0, 0, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #000000;
+}
+
+/* Native Fullscreen API Styles */
+.top-carousel-section:fullscreen,
+.top-carousel-section:-webkit-full-screen,
+.top-carousel-section.is-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  border: none !important;
+}
+
+.top-carousel-section:fullscreen .top-carousel-wrapper,
+.top-carousel-section:-webkit-full-screen .top-carousel-wrapper,
+.top-carousel-section.is-fullscreen .top-carousel-wrapper {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+}
+
+/* Floating Fullscreen Toggle Button */
+.top-carousel-fullscreen-btn {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.top-carousel-fullscreen-btn .fs-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.top-carousel-fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  border-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
 }
 
 .top-carousel-track {
@@ -445,128 +503,89 @@ a { color: inherit; text-decoration: none; }
   width: 100%;
   height: 100%;
   opacity: 0;
-  transform: scale(1.04);
-  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 6s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
+  overflow: hidden;
 }
 
 .top-carousel-slide.is-active {
   opacity: 1;
-  transform: scale(1);
-}
-
-.top-carousel-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-/* Cinematic Gradient Caption Overlay */
-.top-carousel-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(9, 13, 22, 0.15) 0%,
-    transparent 40%,
-    rgba(9, 13, 22, 0.85) 100%
-  );
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: clamp(20px, 4vw, 40px);
-  z-index: 5;
-  pointer-events: none;
-}
-
-.top-carousel-caption {
-  max-width: 600px;
-}
-
-.top-carousel-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(200, 30, 40, 0.9);
-  color: #ffffff;
-  padding: 5px 14px;
-  border-radius: 999px;
-  font: 700 11px var(--mono);
-  letter-spacing: 0.08em;
-  margin-bottom: 10px;
-  box-shadow: 0 4px 12px rgba(200, 30, 40, 0.4);
-}
-
-.live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ffffff;
-  animation: recBlink 1.4s infinite;
-}
-
-.top-carousel-title {
-  margin: 0 0 6px;
-  font: 800 clamp(22px, 3.2vw, 36px)/1.2 var(--serif);
-  color: #ffffff;
-  letter-spacing: -0.01em;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.top-carousel-subtitle {
-  margin: 0;
-  font: 500 clamp(12px, 1.4vw, 15px) var(--sans);
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
-}
-
-.top-carousel-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
   pointer-events: auto;
 }
 
-.top-carousel-counter {
-  font: 600 14px var(--mono);
-  color: #ffffff;
-  background: rgba(9, 13, 22, 0.7);
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
+/* Ambient Blurred Background for widescreen album spreads */
+.top-carousel-slide-bg {
+  position: absolute;
+  inset: -25px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(55px) brightness(0.35);
+  transform: scale(1.12);
+  pointer-events: none;
 }
 
-.top-carousel-counter strong {
-  color: var(--accent-red);
+/* Full uncropped photo showing 100% of the image (faces, edges, text) */
+.top-carousel-img {
+  position: relative;
+  z-index: 2;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  filter: none !important;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7);
+}
+
+/* Discrete Minimal Bottom Dots Bar */
+.top-carousel-dots-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 6;
+  pointer-events: none;
 }
 
 .top-carousel-dots {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
 }
 
 .top-dot {
-  width: 22px;
-  height: 4px;
-  border-radius: 2px;
+  width: 24px;
+  height: 5px;
+  border-radius: 999px;
   border: 0;
   padding: 0;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .top-dot:hover {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .top-dot.is-active {
-  background: var(--accent-red);
-  width: 36px;
+  background: #ffffff;
+  width: 44px;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
 }
 
 /* Dedicated Top Navigation Chevrons */
@@ -575,36 +594,57 @@ a { color: inherit; text-decoration: none; }
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: rgba(9, 13, 22, 0.65);
-  backdrop-filter: blur(10px);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .top-carousel-arrow:hover {
-  background: var(--accent-red);
-  border-color: var(--accent-red);
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  border-color: #ffffff;
   transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 10px 28px rgba(200, 30, 40, 0.45);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
 }
 
 .top-carousel-arrow.prev {
-  left: 20px;
+  left: 24px;
 }
 
 .top-carousel-arrow.next {
-  right: 20px;
+  right: 24px;
+}
+
+@media (max-width: 768px) {
+  .top-carousel-wrapper {
+    height: clamp(320px, 60vh, 500px);
+  }
+  .top-carousel-fullscreen-btn {
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  .top-carousel-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+  }
+  .top-carousel-arrow.prev { left: 10px; }
+  .top-carousel-arrow.next { right: 10px; }
 }
 
 /* ==========================================================================
