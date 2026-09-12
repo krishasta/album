@@ -43,7 +43,7 @@ const servicesData = [
     title: 'Weddings & Marriages',
     category: 'Sacred Celebrations',
     description: 'Comprehensive wedding coverage from Haldi, Mehendi, and Sangeet to the sacred Muhurtham and grand Receptions. Cinematic candid photography and traditional frames crafted with timeless elegance.',
-    features: ['Candid & Traditional Coverage', '4K Cinematic Wedding Films', 'Drone Aerial Perspectives', 'Premium Handcrafted Albums'],
+    // features: ['Candid & Traditional Coverage', '4K Cinematic Wedding Films', 'Drone Aerial Perspectives', 'Premium Handcrafted Albums'],
     icon: '💍',
   },
   {
@@ -51,7 +51,7 @@ const servicesData = [
     title: 'Pre & Post-Wedding Shoots',
     category: 'Couple Sessions',
     description: 'Artistic outdoor and destination couple sessions with customized concept styling, romantic mood lighting, scenic drone captures, and social media reels.',
-    features: ['Destination Storytelling', 'Cinematic Drone Shots', 'Styled Portraits & Reels', 'High-Resolution Retouching'],
+    // features: ['Destination Storytelling', 'Cinematic Drone Shots', 'Styled Portraits & Reels', 'High-Resolution Retouching'],
     icon: '✨',
   },
   {
@@ -59,7 +59,7 @@ const servicesData = [
     title: 'Family Functions & Rituals',
     category: 'Heirloom Moments',
     description: 'Cherishing intimate family milestones — Housewarming (Gruhapravesam), Upanayanam, Anniversaries, Seemantham, and joyful family reunions.',
-    features: ['Complete Ritual Documentation', 'Multi-Generation Portraits', 'Warm Natural Lighting', 'Quick Digital Delivery'],
+    // features: ['Complete Ritual Documentation', 'Multi-Generation Portraits', 'Warm Natural Lighting', 'Quick Digital Delivery'],
     icon: '🏡',
   },
   {
@@ -67,7 +67,7 @@ const servicesData = [
     title: 'Temple Functions & Spiritual Events',
     category: 'Sacred Traditions',
     description: 'Reverent and authentic visual documentation of Temple Kumbhabhishekham, holy deity abhishekams, divine poojas, and cultural religious processions.',
-    features: ['Low-Light Mastery', 'Procession & Crowd Coverage', 'Sacred Ritual Respect', 'Complete Event Archives'],
+    // features: ['Low-Light Mastery', 'Procession & Crowd Coverage', 'Sacred Ritual Respect', 'Complete Event Archives'],
     icon: '🛕',
   },
   {
@@ -75,7 +75,7 @@ const servicesData = [
     title: 'Birthdays & Milestone Celebrations',
     category: 'Festive Gatherings',
     description: 'Vibrant, joyous photography for 1st birthday parties, sweet sixteens, and monumental 60th / 80th (Sashtiapthapoorthi & Sadhabishegam) birthdays.',
-    features: ['Playful Candids', 'Theme Decor & Cake Cutting', 'Family Group Frames', 'Express Highlights Preview'],
+    // features: ['Playful Candids', 'Theme Decor & Cake Cutting', 'Family Group Frames', 'Express Highlights Preview'],
     icon: '🎂',
   },
   {
@@ -83,7 +83,7 @@ const servicesData = [
     title: 'Official & Corporate Events',
     category: 'Professional Services',
     description: 'High-caliber photo and video coverage for corporate summits, conferences, product launches, award galas, and executive leadership headshots.',
-    features: ['Stage & Presentation Shots', 'Executive Headshots', 'Same-Day Press Assets', 'Brand-Aligned Imagery'],
+    // features: ['Stage & Presentation Shots', 'Executive Headshots', 'Same-Day Press Assets', 'Brand-Aligned Imagery'],
     icon: '🏢',
   },
   {
@@ -91,7 +91,7 @@ const servicesData = [
     title: 'Maternity & Baby Shoots',
     category: 'Pure Beginnings',
     description: 'Gentle maternity portraits celebrating motherhood, beautiful baby showers (Seemantham), and cozy newborn milestone captures in a safe, stress-free environment.',
-    features: ['Comfortable Atmosphere', 'Artistic Lighting', 'Baby-Safe Setup', 'Heirloom Keepsakes'],
+    // features: ['Comfortable Atmosphere', 'Artistic Lighting', 'Baby-Safe Setup', 'Heirloom Keepsakes'],
     icon: '👶',
   },
   {
@@ -99,7 +99,7 @@ const servicesData = [
     title: 'Cinematography & Live Streaming',
     category: 'Live Broadcast',
     description: 'Multi-camera 4K live webcasting over YouTube and private links for overseas family and friends, paired with movie-grade teaser videos and documentary cuts.',
-    features: ['Multi-Cam HD/4K Webcast', 'Lag-Free Global Streaming', 'Crisp Audio & Mixing', 'Drone Cinematic Coverage'],
+    // features: ['Multi-Cam HD/4K Webcast', 'Lag-Free Global Streaming', 'Crisp Audio & Mixing', 'Drone Cinematic Coverage'],
     icon: '🎥',
   },
   {
@@ -107,7 +107,7 @@ const servicesData = [
     title: 'CSR & Community Documentary',
     category: 'Social Impact Storytelling',
     description: 'Specialized documentary photography & cinematography for corporate CSR initiatives — from Gethaikadu tribal welfare and Anganwadi model upgrades to green drives at Semmozhi Poonga Coimbatore.',
-    features: ['Field Impact Reports & Archives', 'Drone Aerial Site Documentation', 'High-Res Annual Report Imagery', 'Corporate Foundation Video Stories'],
+    // features: ['Field Impact Reports & Archives', 'Drone Aerial Site Documentation', 'High-Res Annual Report Imagery', 'Corporate Foundation Video Stories'],
     icon: '🤝',
   },
 ]
@@ -424,37 +424,6 @@ function App() {
     ? heroPhotos
     : albums.map((a) => a.cover).filter(Boolean)
 
-  const topCarouselRef = useRef(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      if (topCarouselRef.current?.requestFullscreen) {
-        topCarouselRef.current.requestFullscreen()
-      } else if (topCarouselRef.current?.webkitRequestFullscreen) {
-        topCarouselRef.current.webkitRequestFullscreen()
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen()
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen()
-      }
-    }
-  }
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement || document.webkitFullscreenElement))
-    }
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange)
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
-    }
-  }, [])
-
   useEffect(() => {
     if (!heroGallery || heroGallery.length <= 1) return undefined
 
@@ -608,34 +577,12 @@ function App() {
         </div>
       </nav>
 
-      {/* Full-Screen Pure Photo Showcase Carousel (Edge-to-Edge & 100% Uncropped) */}
-      <section 
-        className={`top-carousel-section ${isFullscreen ? 'is-fullscreen' : ''}`} 
+      {/* Pure Photo Showcase Carousel (Edge-to-Edge & 100% Uncropped) */}
+      <section
+        className="top-carousel-section"
         aria-label="Featured Photography Reel"
-        ref={topCarouselRef}
       >
         <div className="top-carousel-wrapper">
-          {/* Top Floating Fullscreen Button */}
-          <button
-            type="button"
-            className="top-carousel-fullscreen-btn"
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-            title={isFullscreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen View"}
-          >
-            {isFullscreen ? (
-              <>
-                <span className="fs-icon">✕</span>
-                <span className="fs-label">Exit Fullscreen</span>
-              </>
-            ) : (
-              <>
-                <span className="fs-icon">⛶</span>
-                <span className="fs-label">Full Screen</span>
-              </>
-            )}
-          </button>
-
           <div className="top-carousel-track">
             {heroGallery.length > 0 ? (
               heroGallery.map((imgUrl, idx) => (
@@ -643,7 +590,7 @@ function App() {
                   key={imgUrl + idx}
                   className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
                 >
-                  <div 
+                  <div
                     className="top-carousel-slide-bg"
                     style={{ backgroundImage: `url(${imgUrl})` }}
                     aria-hidden="true"
@@ -658,7 +605,7 @@ function App() {
               ))
             ) : (
               <div className="top-carousel-slide is-active">
-                <div 
+                <div
                   className="top-carousel-slide-bg"
                   style={{ backgroundImage: `url(/images/temple2.png)` }}
                   aria-hidden="true"
@@ -724,12 +671,9 @@ function App() {
           <div className="section-header">
             <div className="gallery-header-meta">
               <div>
-                <p className="section-kicker">Client Gallery Archive</p>
+                {/* <p className="section-kicker">Client Gallery Archive</p> */}
                 <h2 className="section-title">Moments, carefully kept.</h2>
               </div>
-              <p className="album-count">
-                {albums.length} albums <span>/</span> {albums.reduce((acc, curr) => acc + (curr.photos?.length || 0), 0) || (albumCount * photosPerAlbum)} curated photos
-              </p>
             </div>
             <p className="section-subtitle">
               Browse interactive live showcase albums. Click any album below to open the immersive full-screen photo viewer.
@@ -833,7 +777,7 @@ function App() {
               <span className="gear-icon">📷</span>
               <div className="gear-text">
                 <strong>Full-Frame Cinema</strong>
-                <span>Sony FX3 & Alpha Series</span>
+                {/* <span>Sony FX3 & Alpha Series</span> */}
               </div>
             </div>
             <div className="gear-divider"></div>
@@ -841,7 +785,7 @@ function App() {
               <span className="gear-icon">🔭</span>
               <div className="gear-text">
                 <strong>Prime G-Master Lenses</strong>
-                <span>f/1.2 & f/1.4 Portrait Optics</span>
+                {/* <span>f/1.2 & f/1.4 Portrait Optics</span> */}
               </div>
             </div>
             <div className="gear-divider"></div>
@@ -849,7 +793,7 @@ function App() {
               <span className="gear-icon">🚁</span>
               <div className="gear-text">
                 <strong>Cinematic Aerials</strong>
-                <span>4K HDR Drone Perspectives</span>
+                {/* <span>4K HDR Drone Perspectives</span> */}
               </div>
             </div>
             <div className="gear-divider"></div>
@@ -857,7 +801,7 @@ function App() {
               <span className="gear-icon">💡</span>
               <div className="gear-text">
                 <strong>Master Studio Strobes</strong>
-                <span>High-Speed Sync Lighting</span>
+                {/* <span>High-Speed Sync Lighting</span> */}
               </div>
             </div>
             <div className="gear-divider"></div>
@@ -865,7 +809,7 @@ function App() {
               <span className="gear-icon">📖</span>
               <div className="gear-text">
                 <strong>Handcrafted Albums</strong>
-                <span>Fine-Art Archival Prints</span>
+                {/* <span>Fine-Art Archival Prints</span> */}
               </div>
             </div>
           </div>
@@ -895,11 +839,11 @@ function App() {
                 <h3 className="service-name">{svc.title}</h3>
                 <p className="service-desc">{svc.description}</p>
                 <div className="service-features-list">
-                  {svc.features.map((feat, idx) => (
+                  {/* {svc.features.map((feat, idx) => (
                     <span className="service-feature-tag" key={idx}>
                       <span className="check-dot">✓</span> {feat}
                     </span>
-                  ))}
+                  ))} */}
                 </div>
                 <div className="service-card-footer">
                   <button
@@ -1169,8 +1113,8 @@ function App() {
                   <div className="contact-item">
                     <span className="contact-icon">📍</span>
                     <div>
-                      <strong>Studio Location</strong>
-                      <p>Anbudan Photos Studio, Art District, Coimbatore & Chennai, Tamil Nadu</p>
+                      <strong>Office Location</strong>
+                      <p>Anbudan Photos Studio,  Coimbatore , Tamil Nadu</p>
                     </div>
                   </div>
                   <div className="contact-item">
@@ -1267,7 +1211,7 @@ function App() {
                         id="contact-name"
                         name="name"
                         required
-                        placeholder="e.g. Krish"
+                        placeholder="e.g. Anbudan"
                         value={contactData.name}
                         onChange={handleContactChange}
                       />
@@ -1294,7 +1238,7 @@ function App() {
                         id="contact-email"
                         name="email"
                         required
-                        placeholder="krish@example.com"
+                        placeholder="anbudan@example.com"
                         value={contactData.email}
                         onChange={handleContactChange}
                       />

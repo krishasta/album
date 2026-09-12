@@ -35,9 +35,9 @@ function CardAlbum({ album, index, total = 10, onOpen, isLoading }) {
         )}
 
         {/* Top Badge: Photo Count */}
-        <span className="gallery-album-badge">
+        {/* <span className="gallery-album-badge">
           📸 {photoCount} Photos
-        </span>
+        </span> */}
 
         {/* Hover Action Badge */}
         <div className="gallery-album-overlay">
