@@ -1114,7 +1114,7 @@ function App() {
                     <span className="contact-icon">📍</span>
                     <div>
                       <strong>Office Location</strong>
-                      <p>Anbudan Photos Studio,  Coimbatore , Tamil Nadu</p>
+                      <p>Anbudan Photos,  Coimbatore , Tamil Nadu</p>
                     </div>
                   </div>
                   <div className="contact-item">
