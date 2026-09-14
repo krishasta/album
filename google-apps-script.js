@@ -12,6 +12,7 @@
 
 const MAIN_DRIVE_FOLDER_ID = "1C99Je4_Xfc5k_1Hcpd0de1_AJzhrjHgY";
 const HERO_FOLDER_ID = "158SNnhmVffD5SO3bPyYpt0PQ5SPhCM82"; // Dedicated Hero Carousel Folder
+const PORTFOLIO_FOLDER_ID = "1itWJmunwM-o949Ygd4r8h1JGYIW8tcIA"; // Dedicated Portfolio Folder
 
 function doGet(e) {
   try {
@@ -19,6 +20,7 @@ function doGet(e) {
     const subfolders = mainFolder.getFolders();
     const albums = [];
     const heroPhotos = [];
+    const portfolioStories = [];
 
     // 1. Fetch Dedicated Hero Carousel Photos if folder exists
     if (HERO_FOLDER_ID) {
@@ -87,9 +89,109 @@ function doGet(e) {
     // Sort albums alphabetically by folder name
     albums.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
 
+    // 3. Fetch Dedicated Portfolio Showcase Subfolders & Photos (Folder ID: 1itWJmunwM-o949Ygd4r8h1JGYIW8tcIA)
+    if (PORTFOLIO_FOLDER_ID) {
+      try {
+        const portfolioFolder = DriveApp.getFolderById(PORTFOLIO_FOLDER_ID);
+        const pSubfolders = portfolioFolder.getFolders();
+        while (pSubfolders.hasNext()) {
+          const pFolder = pSubfolders.next();
+          const pFolderName = pFolder.getName();
+          const pFiles = pFolder.getFiles();
+          const pPhotos = [];
+
+          while (pFiles.hasNext()) {
+            const file = pFiles.next();
+            const mimeType = file.getMimeType();
+            if (mimeType.indexOf("image/") !== -1 || /\.(jpe?g|png|webp|gif|bmp)$/i.test(file.getName())) {
+              pPhotos.push({
+                id: file.getId(),
+                name: file.getName().replace(/\.[^/.]+$/, ""),
+                url: "https://lh3.googleusercontent.com/d/" + file.getId() + "=w1600",
+                thumbnail: "https://lh3.googleusercontent.com/d/" + file.getId() + "=w600"
+              });
+            }
+          }
+
+          pPhotos.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
+
+          // Categorize based on folder name
+          let category = "Celebration";
+          let tag = "Curated Visual Story";
+          let description = "Captured with genuine emotion and cinematic artistry by Anbudan Photos.";
+
+          if (/wedding|sujithra|marriage|muhurtham|reception|couple/i.test(pFolderName)) {
+            category = "Weddings";
+            tag = "Sacred Muhurtham & Reception";
+            description = "An elegant union filled with sacred rituals, vibrant joyous moments, and timeless couple portraiture.";
+          } else if (/baby|shower|maternity|seemantham/i.test(pFolderName)) {
+            category = "Maternity & Baby Shower";
+            tag = "Seemantham & Family Blessings";
+            description = "Celebrating the divine journey into parenthood with heartfelt traditions, warm smiles, and gentle maternity glow.";
+          } else if (/birthday|milestone|18th/i.test(pFolderName)) {
+            category = "Birthdays & Milestones";
+            tag = "Milestone Celebration";
+            description = "Lively, joyful celebration marked by vibrant family candids, laughter, and unforgettable milestone energy.";
+          } else if (/opening|ceremony|corporate|suites|commercial|lrt|csr|summit/i.test(pFolderName)) {
+            category = "Corporate & Commercial";
+            tag = "Executive & Commercial Showcase";
+            description = "Executive coverage of prestigious ceremonies, distinguished guests, and architectural splendor.";
+          }
+
+          portfolioStories.push({
+            id: pFolder.getId(),
+            name: pFolderName,
+            title: pFolderName,
+            category: category,
+            tag: tag,
+            description: description,
+            cover: pPhotos.length > 0 ? pPhotos[0].url : "",
+            photos: pPhotos,
+            photoCount: pPhotos.length,
+            folderLink: "https://drive.google.com/drive/folders/" + pFolder.getId()
+          });
+        }
+
+        // Also check if images were placed directly inside portfolio root folder
+        const directFiles = portfolioFolder.getFiles();
+        const directPhotos = [];
+        while (directFiles.hasNext()) {
+          const file = directFiles.next();
+          const mimeType = file.getMimeType();
+          if (mimeType.indexOf("image/") !== -1 || /\.(jpe?g|png|webp|gif|bmp)$/i.test(file.getName())) {
+            directPhotos.push({
+              id: file.getId(),
+              name: file.getName().replace(/\.[^/.]+$/, ""),
+              url: "https://lh3.googleusercontent.com/d/" + file.getId() + "=w1600",
+              thumbnail: "https://lh3.googleusercontent.com/d/" + file.getId() + "=w600"
+            });
+          }
+        }
+        if (directPhotos.length > 0 && portfolioStories.length === 0) {
+          portfolioStories.push({
+            id: portfolioFolder.getId(),
+            name: "Portfolio Highlights",
+            title: "Portfolio Highlights",
+            category: "Weddings",
+            tag: "Curated Showcase",
+            description: "Captured with genuine emotion and cinematic artistry by Anbudan Photos.",
+            cover: directPhotos[0].url,
+            photos: directPhotos,
+            photoCount: directPhotos.length,
+            folderLink: "https://drive.google.com/drive/folders/" + PORTFOLIO_FOLDER_ID
+          });
+        }
+
+        portfolioStories.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
+      } catch (pErr) {
+        // Fallback silently if portfolio folder fails
+      }
+    }
+
     const responsePayload = {
       heroPhotos: heroPhotos,
-      albums: albums
+      albums: albums,
+      portfolio: portfolioStories
     };
 
     return ContentService.createTextOutput(JSON.stringify(responsePayload))

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import './App.css'
 import CardAlbum from './components/cardalbum.jsx'
 import MainAlbum from './components/mainalbum.jsx'
+import PortfolioPage from './components/PortfolioPage.jsx'
 
 const albumCount = 10
 const photosPerAlbum = 10
@@ -39,76 +40,53 @@ const loadDriveAlbums = async () => {
 
 const servicesData = [
   {
-    id: 'marriages',
-    title: 'Weddings & Marriages',
-    category: 'Sacred Celebrations',
-    description: 'Comprehensive wedding coverage from Haldi, Mehendi, and Sangeet to the sacred Muhurtham and grand Receptions. Cinematic candid photography and traditional frames crafted with timeless elegance.',
-    // features: ['Candid & Traditional Coverage', '4K Cinematic Wedding Films', 'Drone Aerial Perspectives', 'Premium Handcrafted Albums'],
+    id: 'candid-photography',
+    title: 'Candid Photography',
+    category: 'Unscripted Moments',
+    description: 'Authentic emotions, natural expressions, and beautifully unscripted moments.',
+    icon: '📸',
+  },
+  {
+    id: 'wedding-photography',
+    title: 'Wedding Photography',
+    category: 'Timeless Celebrations',
+    description: 'Timeless imagery capturing the elegance, emotion, and grandeur of your wedding celebration.',
     icon: '💍',
   },
   {
-    id: 'pre-wedding',
-    title: 'Pre & Post-Wedding Shoots',
+    id: 'pre-wedding-photography',
+    title: 'Pre-Wedding Photography',
     category: 'Couple Sessions',
-    description: 'Artistic outdoor and destination couple sessions with customized concept styling, romantic mood lighting, scenic drone captures, and social media reels.',
-    // features: ['Destination Storytelling', 'Cinematic Drone Shots', 'Styled Portraits & Reels', 'High-Resolution Retouching'],
+    description: 'Romantic, artistic portraits created around your unique story and connection.',
+    icon: '💐',
+  },
+  {
+    id: 'post-wedding-photography',
+    title: 'Post-Wedding Photography',
+    category: 'Cinematic Storytelling',
+    description: 'Elegant portraits and cinematic moments that continue your wedding story beyond the celebration.',
     icon: '✨',
   },
   {
-    id: 'family-functions',
-    title: 'Family Functions & Rituals',
-    category: 'Heirloom Moments',
-    description: 'Cherishing intimate family milestones — Housewarming (Gruhapravesam), Upanayanam, Anniversaries, Seemantham, and joyful family reunions.',
-    // features: ['Complete Ritual Documentation', 'Multi-Generation Portraits', 'Warm Natural Lighting', 'Quick Digital Delivery'],
-    icon: '🏡',
-  },
-  {
-    id: 'temple-functions',
-    title: 'Temple Functions & Spiritual Events',
-    category: 'Sacred Traditions',
-    description: 'Reverent and authentic visual documentation of Temple Kumbhabhishekham, holy deity abhishekams, divine poojas, and cultural religious processions.',
-    // features: ['Low-Light Mastery', 'Procession & Crowd Coverage', 'Sacred Ritual Respect', 'Complete Event Archives'],
-    icon: '🛕',
-  },
-  {
-    id: 'birthdays',
-    title: 'Birthdays & Milestone Celebrations',
-    category: 'Festive Gatherings',
-    description: 'Vibrant, joyous photography for 1st birthday parties, sweet sixteens, and monumental 60th / 80th (Sashtiapthapoorthi & Sadhabishegam) birthdays.',
-    // features: ['Playful Candids', 'Theme Decor & Cake Cutting', 'Family Group Frames', 'Express Highlights Preview'],
-    icon: '🎂',
-  },
-  {
-    id: 'official-events',
-    title: 'Official & Corporate Events',
-    category: 'Professional Services',
-    description: 'High-caliber photo and video coverage for corporate summits, conferences, product launches, award galas, and executive leadership headshots.',
-    // features: ['Stage & Presentation Shots', 'Executive Headshots', 'Same-Day Press Assets', 'Brand-Aligned Imagery'],
+    id: 'corporate-photography',
+    title: 'Corporate Photography',
+    category: 'Professional & Brand',
+    description: 'Professional visual storytelling for corporate events, conferences, executives, and brand experiences.',
     icon: '🏢',
   },
   {
-    id: 'baby-maternity',
-    title: 'Maternity & Baby Shoots',
-    category: 'Pure Beginnings',
-    description: 'Gentle maternity portraits celebrating motherhood, beautiful baby showers (Seemantham), and cozy newborn milestone captures in a safe, stress-free environment.',
-    // features: ['Comfortable Atmosphere', 'Artistic Lighting', 'Baby-Safe Setup', 'Heirloom Keepsakes'],
-    icon: '👶',
+    id: 'maternity-photography',
+    title: 'Maternity Photography',
+    category: 'Motherhood & New Beginnings',
+    description: 'Graceful and intimate portraits celebrating the beauty of motherhood and the beginning of a new journey.',
+    icon: '🌸',
   },
   {
-    id: 'cinematography-live',
-    title: 'Cinematography & Live Streaming',
-    category: 'Live Broadcast',
-    description: 'Multi-camera 4K live webcasting over YouTube and private links for overseas family and friends, paired with movie-grade teaser videos and documentary cuts.',
-    // features: ['Multi-Cam HD/4K Webcast', 'Lag-Free Global Streaming', 'Crisp Audio & Mixing', 'Drone Cinematic Coverage'],
-    icon: '🎥',
-  },
-  {
-    id: 'csr-documentary',
-    title: 'CSR & Community Documentary',
-    category: 'Social Impact Storytelling',
-    description: 'Specialized documentary photography & cinematography for corporate CSR initiatives — from Gethaikadu tribal welfare and Anganwadi model upgrades to green drives at Semmozhi Poonga Coimbatore.',
-    // features: ['Field Impact Reports & Archives', 'Drone Aerial Site Documentation', 'High-Res Annual Report Imagery', 'Corporate Foundation Video Stories'],
-    icon: '🤝',
+    id: 'birthday-photography',
+    title: 'Birthday Photography',
+    category: 'Joyful Milestones',
+    description: 'Vibrant and heartfelt photographs preserving the joy, celebration, and unforgettable moments of every milestone.',
+    icon: '🎂',
   },
 ]
 
@@ -252,7 +230,11 @@ function ClientAvatar({ src, alt, fallbackInitials }) {
 }
 
 function App() {
+  const [currentView, setCurrentView] = useState(() =>
+    typeof window !== 'undefined' && window.location.hash === '#portfolio' ? 'portfolio' : 'home'
+  )
   const [albums, setAlbums] = useState(initialAlbums)
+  const [drivePortfolio, setDrivePortfolio] = useState([])
   const [heroPhotos, setHeroPhotos] = useState([])
   const [heroPhotoIndex, setHeroPhotoIndex] = useState(0)
   const [activeAlbum, setActiveAlbum] = useState(null)
@@ -265,18 +247,37 @@ function App() {
     name: '',
     phone: '',
     email: '',
-    service: 'Weddings & Marriages',
+    service: 'Candid Photography',
     eventDate: '',
     message: '',
   })
 
   const closeAlbum = () => setActiveAlbum(null)
 
+  // Listen to browser hash changes for seamless back/forward navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#portfolio') {
+        setCurrentView('portfolio')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else if (window.location.hash === '#home' || !window.location.hash) {
+        setCurrentView('home')
+      }
+    }
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
   const processDriveData = (driveData) => {
     if (!driveData || typeof driveData !== 'object') return null
     if (driveData.error) {
       console.warn('Google Apps Script returned an error:', driveData.error)
       return null
+    }
+
+    // Extract Portfolio Stories if provided in response
+    if (driveData.portfolio && Array.isArray(driveData.portfolio)) {
+      setDrivePortfolio(driveData.portfolio)
     }
 
     // Extract Hero Photos if provided in response
@@ -515,8 +516,36 @@ function App() {
     setIsSendingInquiry(false)
   }
 
+  const navigateToView = (view, targetSectionId = null) => {
+    setMenuOpen(false)
+    if (view === 'portfolio') {
+      setCurrentView('portfolio')
+      window.location.hash = '#portfolio'
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      setCurrentView('home')
+      if (window.location.hash === '#portfolio') {
+        window.location.hash = targetSectionId ? `#${targetSectionId}` : '#home'
+      }
+      if (targetSectionId) {
+        setTimeout(() => {
+          const element = document.getElementById(targetSectionId)
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' })
+          }
+        }, 80)
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  }
+
   const handleNavClick = (sectionId) => {
     setMenuOpen(false)
+    if (currentView !== 'home') {
+      navigateToView('home', sectionId)
+      return
+    }
     const element = document.getElementById(sectionId)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
@@ -525,6 +554,10 @@ function App() {
 
   const selectServiceForInquiry = (serviceTitle) => {
     setContactData((prev) => ({ ...prev, service: serviceTitle }))
+    if (currentView !== 'home') {
+      navigateToView('home', 'contact')
+      return
+    }
     const element = document.getElementById('contact')
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
@@ -536,7 +569,14 @@ function App() {
       {/* Sticky Navigation Bar */}
       <nav className="top-nav" aria-label="Main Navigation">
         <div className="nav-container">
-          <a href="#home" className="nav-brand" onClick={(e) => { e.preventDefault(); handleNavClick('home') }}>
+          <a
+            href="#home"
+            className="nav-brand"
+            onClick={(e) => {
+              e.preventDefault()
+              navigateToView('home', 'home')
+            }}
+          >
             <div className="brand-mark">
               <img src="/01 org.png" alt="Anbudan Photos logo" />
             </div>
@@ -547,17 +587,75 @@ function App() {
           </a>
 
           <div className={`nav-links ${menuOpen ? 'is-open' : ''}`}>
-            <a href="#gallery" onClick={(e) => { e.preventDefault(); handleNavClick('gallery') }}>Gallery</a>
-            <a href="#home" onClick={(e) => { e.preventDefault(); handleNavClick('home') }}>About Studio</a>
-            <a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Services</a>
-            {/* <a href="#csr" onClick={(e) => { e.preventDefault(); handleNavClick('csr') }}>CSR Impact</a> */}
-            <a href="#customers" onClick={(e) => { e.preventDefault(); handleNavClick('customers') }}>Customers</a>
-            <a href="#about" onClick={(e) => { e.preventDefault(); handleNavClick('about') }}>Why Us</a>
-            <a href="#contact" onClick={(e) => { e.preventDefault(); handleNavClick('contact') }}>Contact</a>
+            <a
+              href="#portfolio"
+              onClick={(e) => {
+                e.preventDefault()
+                navigateToView('portfolio')
+              }}
+              className={currentView === 'portfolio' ? 'active-nav-link' : ''}
+            >
+              Portfolio
+            </a>
+            <a
+              href="#gallery"
+              onClick={(e) => {
+                e.preventDefault()
+                navigateToView('home', 'gallery')
+              }}
+            >
+              Gallery
+            </a>
+            <a
+              href="#home"
+              onClick={(e) => {
+                e.preventDefault()
+                navigateToView('home', 'home')
+              }}
+            >
+              About
+            </a>
+            <a
+              href="#services"
+              onClick={(e) => {
+                e.preventDefault()
+                navigateToView('home', 'services')
+              }}
+            >
+              Services
+            </a>
+            {/* <a href="#csr" onClick={(e) => { e.preventDefault(); navigateToView('home', 'csr') }}>CSR Impact</a> */}
+            <a
+              href="#customers"
+              onClick={(e) => {
+                e.preventDefault()
+                navigateToView('home', 'customers')
+              }}
+            >
+              Customers
+            </a>
+            <a
+              href="#about"
+              onClick={(e) => {
+                e.preventDefault()
+                navigateToView('home', 'about')
+              }}
+            >
+              Why Us
+            </a>
+            <a
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault()
+                navigateToView('home', 'contact')
+              }}
+            >
+              Contact
+            </a>
             <button
               className="nav-cta-btn"
               type="button"
-              onClick={() => handleNavClick('contact')}
+              onClick={() => navigateToView('home', 'contact')}
             >
               Book a Shoot <span>→</span>
             </button>
@@ -577,290 +675,317 @@ function App() {
         </div>
       </nav>
 
-      {/* Pure Photo Showcase Carousel (Edge-to-Edge & 100% Uncropped) */}
-      <section
-        className="top-carousel-section"
-        aria-label="Featured Photography Reel"
-      >
-        <div className="top-carousel-wrapper">
-          <div className="top-carousel-track">
-            {heroGallery.length > 0 ? (
-              heroGallery.map((imgUrl, idx) => (
-                <div
-                  key={imgUrl + idx}
-                  className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                >
-                  <div
-                    className="top-carousel-slide-bg"
-                    style={{ backgroundImage: `url(${imgUrl})` }}
-                    aria-hidden="true"
-                  />
-                  <img
-                    src={imgUrl}
-                    alt={`Anbudan Photos showcase ${idx + 1}`}
-                    className="top-carousel-img"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              ))
-            ) : (
-              <div className="top-carousel-slide is-active">
-                <div
-                  className="top-carousel-slide-bg"
-                  style={{ backgroundImage: `url(/images/temple2.png)` }}
-                  aria-hidden="true"
-                />
-                <img
-                  src="/images/temple2.png"
-                  alt="Anbudan Photos showcase"
-                  className="top-carousel-img"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Discrete Bottom Slide Dots */}
-          {heroGallery.length > 1 && (
-            <div className="top-carousel-dots-bar">
-              <div className="top-carousel-dots">
-                {heroGallery.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                    onClick={() => setHeroPhotoIndex(idx)}
-                    aria-label={`Go to slide ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Subtle Navigation Chevrons */}
-          {heroGallery.length > 1 && (
-            <>
-              <button
-                type="button"
-                className="top-carousel-arrow prev"
-                onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
-                aria-label="Previous Slide"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                className="top-carousel-arrow next"
-                onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
-                aria-label="Next Slide"
-              >
-                ›
-              </button>
-            </>
-          )}
-        </div>
-      </section>
-
-      <main className="app-shell">
-        {/* Background Ambient Light Orbs */}
-        <div className="ambient-glow glow-1" aria-hidden="true"></div>
-        <div className="ambient-glow glow-2" aria-hidden="true"></div>
-        <div className="ambient-glow glow-3" aria-hidden="true"></div>
-
-        {/* Section 1: Gallery (Client Gallery Archive & Live Drive Viewer) */}
-        <section id="gallery" className="section-block gallery-section">
-          <div className="section-header">
-            <div className="gallery-header-meta">
-              <div>
-                {/* <p className="section-kicker">Client Gallery Archive</p> */}
-                <h2 className="section-title">Moments, carefully kept.</h2>
-              </div>
-            </div>
-            <p className="section-subtitle">
-              Browse interactive live showcase albums. Click any album below to open the immersive full-screen photo viewer.
-            </p>
-          </div>
-
-          {driveStatus === 'loading' && (
-            <div className="drive-banner drive-loading-box">
-              <span className="spinner-indicator"></span>
-              <p className="drive-loading" role="status">
-                Connecting to Google Drive photo storage<span>...</span>
-              </p>
-            </div>
-          )}
-          {driveStatus === 'fallback' && (
-            <div className="drive-banner drive-notice-box">
-              <p className="drive-notice">
-                Showing preview gallery structure. Connect Apps Script to sync real-time Drive folders.
-              </p>
-            </div>
-          )}
-
-          <div className="gallery-grid-container" aria-label="Photo albums">
-            <div className="gallery-album-grid">
-              {albums.map((album, index) => (
-                <CardAlbum
-                  album={album}
-                  index={index}
-                  total={albums.length}
-                  onOpen={setActiveAlbum}
-                  isLoading={driveStatus === 'loading' && !album.cover}
-                  key={album.name || index}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Section 2: Home / Hero Studio Overview */}
-        <section id="home" className="hero-section">
-          <div className="hero-layout-grid">
-            {/* Left Column: Hero Text & Storytelling */}
-            <div className="hero-content">
-              <div className="hero-eyebrow-wrapper">
-                <span className="eyebrow hero-eyebrow">
-                  <span className="pulse-dot"></span> Photography & Cinematography Studio
-                </span>
-              </div>
-              <h1 className="hero-title">
-                Capturing Soulful Moments & <span className="text-gradient">Visual Legacies</span> Through Our Lens.
-              </h1>
-              <p className="hero-desc">
-                From sacred marriage muhurthams and grand temple festivals to vibrant birthday celebrations,
-                executive summits, and heartwarming family milestones — we craft authentic, heirloom-grade imagery that endures for generations.
-              </p>
-              <div className="hero-actions">
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => handleNavClick('gallery')}
-                >
-                  <span>Explore Client Gallery</span> <span className="btn-arrow">↗</span>
-                </button>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => handleNavClick('contact')}
-                >
-                  <span>Book a Shoot</span> <span className="btn-arrow">↓</span>
-                </button>
-              </div>
-
-              <div className="hero-stats-strip">
-                <div className="stat-pill">
-                  <div className="stat-glow"></div>
-                  <strong>500+</strong>
-                  <span>Celebrations Captured</span>
-                </div>
-                <div className="stat-pill">
-                  <div className="stat-glow"></div>
-                  <strong>10+</strong>
-                  <span>Years Behind The Lens</span>
-                </div>
-                <div className="stat-pill">
-                  <div className="stat-glow"></div>
-                  <strong>100%</strong>
-                  <span>Heartfelt Reviews</span>
-                </div>
-                <div className="stat-pill">
-                  <div className="stat-glow"></div>
-                  <strong>4K & Drone</strong>
-                  <span>Cinema-Grade Gear</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Photography Studio Gear & Artistry Strip */}
-          <div className="photo-gear-marquee-strip" aria-label="Studio Gear and Capabilities">
-            <div className="gear-item">
-              <span className="gear-icon">📷</span>
-              <div className="gear-text">
-                <strong>Full-Frame Cinema</strong>
-                {/* <span>Sony FX3 & Alpha Series</span> */}
-              </div>
-            </div>
-            <div className="gear-divider"></div>
-            <div className="gear-item">
-              <span className="gear-icon">🔭</span>
-              <div className="gear-text">
-                <strong>Prime G-Master Lenses</strong>
-                {/* <span>f/1.2 & f/1.4 Portrait Optics</span> */}
-              </div>
-            </div>
-            <div className="gear-divider"></div>
-            <div className="gear-item">
-              <span className="gear-icon">🚁</span>
-              <div className="gear-text">
-                <strong>Cinematic Aerials</strong>
-                {/* <span>4K HDR Drone Perspectives</span> */}
-              </div>
-            </div>
-            <div className="gear-divider"></div>
-            <div className="gear-item">
-              <span className="gear-icon">💡</span>
-              <div className="gear-text">
-                <strong>Master Studio Strobes</strong>
-                {/* <span>High-Speed Sync Lighting</span> */}
-              </div>
-            </div>
-            <div className="gear-divider"></div>
-            <div className="gear-item">
-              <span className="gear-icon">📖</span>
-              <div className="gear-text">
-                <strong>Handcrafted Albums</strong>
-                {/* <span>Fine-Art Archival Prints</span> */}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3: Services */}
-        <section id="services" className="section-block services-section">
-          <div className="section-header">
-            <p className="section-kicker">What We Do</p>
-            <h2 className="section-title">Comprehensive Photography & Videography Services</h2>
-            <p className="section-subtitle">
-              Every occasion is unique. We provide end-to-end bespoke coverage with high-end camera technology,
-              cinematic lighting, and heartfelt storytelling.
-            </p>
-          </div>
-
-          <div className="services-grid">
-            {servicesData.map((svc) => (
-              <div className="service-card" key={svc.id}>
-                <div className="service-card-glow" aria-hidden="true"></div>
-                <div className="service-card-top">
-                  <div className="service-icon-wrapper">
-                    <span className="service-icon" role="img" aria-hidden="true">{svc.icon}</span>
+      {currentView === 'portfolio' ? (
+        <PortfolioPage
+          drivePortfolio={drivePortfolio}
+          driveAlbums={albums}
+          isLoading={driveStatus === 'loading'}
+          onNavigateHome={() => navigateToView('home', 'home')}
+          onBookClick={() => navigateToView('home', 'contact')}
+          onOpenAlbum={setActiveAlbum}
+        />
+      ) : (
+        <>
+          {/* Pure Photo Showcase Carousel (Edge-to-Edge & 100% Uncropped) */}
+          <section
+            className="top-carousel-section"
+            aria-label="Featured Photography Reel"
+          >
+            <div className="top-carousel-wrapper">
+              <div className="top-carousel-track">
+                {heroGallery.length > 0 ? (
+                  heroGallery.map((imgUrl, idx) => (
+                    <div
+                      key={imgUrl + idx}
+                      className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                    >
+                      <div
+                        className="top-carousel-slide-bg"
+                        style={{ backgroundImage: `url(${imgUrl})` }}
+                        aria-hidden="true"
+                      />
+                      <img
+                        src={imgUrl}
+                        alt={`Anbudan Photos showcase ${idx + 1}`}
+                        className="top-carousel-img"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="top-carousel-slide is-active">
+                    <div
+                      className="top-carousel-slide-bg"
+                      style={{ backgroundImage: `url(/images/temple2.png)` }}
+                      aria-hidden="true"
+                    />
+                    <img
+                      src="/images/temple2.png"
+                      alt="Anbudan Photos showcase"
+                      className="top-carousel-img"
+                    />
                   </div>
-                  <span className="service-category-badge">{svc.category}</span>
+                )}
+              </div>
+
+              {/* Discrete Bottom Slide Dots */}
+              {heroGallery.length > 1 && (
+                <div className="top-carousel-dots-bar">
+                  <div className="top-carousel-dots">
+                    {heroGallery.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                        onClick={() => setHeroPhotoIndex(idx)}
+                        aria-label={`Go to slide ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <h3 className="service-name">{svc.title}</h3>
-                <p className="service-desc">{svc.description}</p>
-                <div className="service-features-list">
-                  {/* {svc.features.map((feat, idx) => (
+              )}
+
+              {/* Subtle Navigation Chevrons */}
+              {heroGallery.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    className="top-carousel-arrow prev"
+                    onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
+                    aria-label="Previous Slide"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className="top-carousel-arrow next"
+                    onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
+                    aria-label="Next Slide"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+            </div>
+          </section>
+
+          <main className="app-shell">
+            {/* Background Ambient Light Orbs */}
+            <div className="ambient-glow glow-1" aria-hidden="true"></div>
+            <div className="ambient-glow glow-2" aria-hidden="true"></div>
+            <div className="ambient-glow glow-3" aria-hidden="true"></div>
+
+            {/* Section 1: Gallery (Client Gallery Archive & Live Drive Viewer) */}
+            <section id="gallery" className="section-block gallery-section">
+              <div className="section-header">
+                <div className="gallery-header-meta">
+                  <div>
+                    {/* <p className="section-kicker">Client Gallery Archive</p> */}
+                    <h2 className="section-title">Moments, Beautifully Preserved.</h2>
+                  </div>
+                </div>
+                <p className="section-subtitle">
+                  Explore our curated collection of photographs and visual stories.
+                  Each gallery is an invitation to relive the emotions, details, and unforgettable moments that made the occasion truly special.
+                </p>
+              </div>
+
+              {driveStatus === 'loading' && (
+                <div className="drive-banner drive-loading-box">
+                  <span className="spinner-indicator"></span>
+                  <p className="drive-loading" role="status">
+                    Connecting to Google Drive photo storage<span>...</span>
+                  </p>
+                </div>
+              )}
+              {driveStatus === 'fallback' && (
+                <div className="drive-banner drive-notice-box">
+                  <p className="drive-notice">
+                    Showing preview gallery structure. Connect Apps Script to sync real-time Drive folders.
+                  </p>
+                </div>
+              )}
+
+              <div className="gallery-grid-container" aria-label="Photo albums">
+                <div className="gallery-album-grid">
+                  {albums.map((album, index) => (
+                    <CardAlbum
+                      album={album}
+                      index={index}
+                      total={albums.length}
+                      onOpen={setActiveAlbum}
+                      isLoading={driveStatus === 'loading' && !album.cover}
+                      key={album.name || index}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Section 2: Home / Hero Studio Overview */}
+            <section id="home" className="hero-section">
+              <div className="hero-layout-grid">
+                {/* Left Column: Hero Text & Storytelling */}
+                <div className="hero-content">
+                  <div className="hero-eyebrow-wrapper">
+                    <span className="eyebrow hero-eyebrow">
+                      <span className="pulse-dot"></span> ANBUDAN PHOTOS • WEDDING PHOTOGRAPHY & FILMS
+                    </span>
+                  </div>
+                  <h1 className="hero-title">
+                    Your Love Story, <span className="text-gradient">Beautifully Preserved.</span>
+                  </h1>
+                  <div className="hero-desc-wrapper" style={{ maxWidth: '820px', margin: '0 auto 34px', textAlign: 'center' }}>
+                    <p className="hero-desc-lead" style={{ margin: '0 0 12px', fontSize: 'clamp(17px, 1.8vw, 20px)', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.5 }}>
+                      Welcome to Anbudan Photos—where extraordinary celebrations become timeless visual stories.
+                    </p>
+                    <p className="hero-desc" style={{ margin: '0 0 12px' }}>
+                      We believe your wedding is more than a day. It is a collection of emotions, traditions, laughter, tears, and unforgettable moments shared with the people who matter most.
+                    </p>
+                    <p className="hero-desc" style={{ margin: '0 0 16px' }}>
+                      Through our lens, we preserve these moments with elegance, artistry, and authenticity, creating photographs and films that allow you to relive your celebration for generations to come.
+                    </p>
+                    <p className="hero-tagline-motto" style={{ margin: '0', font: '600 14px var(--mono)', color: 'var(--accent-red)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                      Your moments. Your emotions. Your story.
+                    </p>
+                  </div>
+                  <div className="hero-actions">
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      onClick={() => handleNavClick('gallery')}
+                    >
+                      <span>Explore Client Gallery</span> <span className="btn-arrow">↗</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => handleNavClick('contact')}
+                    >
+                      <span>Book a Shoot</span> <span className="btn-arrow">↓</span>
+                    </button>
+                  </div>
+
+                  <div className="hero-stats-strip">
+                    <div className="stat-pill">
+                      <div className="stat-glow"></div>
+                      <strong>500+</strong>
+                      <span>Celebrations Captured</span>
+                    </div>
+                    <div className="stat-pill">
+                      <div className="stat-glow"></div>
+                      <strong>10+</strong>
+                      <span>Years Behind The Lens</span>
+                    </div>
+                    <div className="stat-pill">
+                      <div className="stat-glow"></div>
+                      <strong>100%</strong>
+                      <span>Heartfelt Reviews</span>
+                    </div>
+                    <div className="stat-pill">
+                      <div className="stat-glow"></div>
+                      <strong>4K & Drone</strong>
+                      <span>Cinema-Grade Gear</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Photography Studio Gear & Artistry Strip */}
+              <div className="photo-gear-marquee-strip" aria-label="Studio Gear and Capabilities">
+                <div className="gear-item">
+                  <span className="gear-icon">📷</span>
+                  <div className="gear-text">
+                    <strong>Full-Frame Cinema</strong>
+                    {/* <span>Sony FX3 & Alpha Series</span> */}
+                  </div>
+                </div>
+                <div className="gear-divider"></div>
+                <div className="gear-item">
+                  <span className="gear-icon">🔭</span>
+                  <div className="gear-text">
+                    <strong>Prime G-Master Lenses</strong>
+                    {/* <span>f/1.2 & f/1.4 Portrait Optics</span> */}
+                  </div>
+                </div>
+                <div className="gear-divider"></div>
+                <div className="gear-item">
+                  <span className="gear-icon">🚁</span>
+                  <div className="gear-text">
+                    <strong>Cinematic Aerials</strong>
+                    {/* <span>4K HDR Drone Perspectives</span> */}
+                  </div>
+                </div>
+                <div className="gear-divider"></div>
+                <div className="gear-item">
+                  <span className="gear-icon">💡</span>
+                  <div className="gear-text">
+                    <strong>Master Studio Strobes</strong>
+                    {/* <span>High-Speed Sync Lighting</span> */}
+                  </div>
+                </div>
+                <div className="gear-divider"></div>
+                <div className="gear-item">
+                  <span className="gear-icon">📖</span>
+                  <div className="gear-text">
+                    <strong>Handcrafted Albums</strong>
+                    {/* <span>Fine-Art Archival Prints</span> */}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 3: Services */}
+            <section id="services" className="section-block services-section">
+              <div className="section-header">
+                <p className="section-kicker">What We Do</p>
+                <h2 className="section-title">Bespoke Photography & Cinematic Videography</h2>
+                <p className="section-subtitle">
+                  Every celebration has its own story, character, and emotion. We create bespoke photography and cinematic films tailored to each occasion — from intimate family moments and elegant weddings to grand celebrations, spiritual events, and corporate experiences.
+                </p>
+                <p className="section-subtitle" style={{ marginTop: '12px' }}>
+                  With refined visual artistry, professional-grade camera technology, cinematic lighting, and an uncompromising eye for detail, we transform fleeting moments into timeless visual legacies.
+                </p>
+                <p className="section-tagline-highlight" style={{ marginTop: '16px', font: '600 13.5px var(--mono)', color: 'var(--accent-red)', letterSpacing: '0.04em' }}>
+                  Thoughtfully Captured. Beautifully Crafted. Timelessly Preserved.
+                </p>
+              </div>
+
+              <div className="services-grid">
+                {servicesData.map((svc) => (
+                  <div className="service-card" key={svc.id}>
+                    <div className="service-card-glow" aria-hidden="true"></div>
+                    <div className="service-card-top">
+                      <div className="service-icon-wrapper">
+                        <span className="service-icon" role="img" aria-hidden="true">{svc.icon}</span>
+                      </div>
+                      <span className="service-category-badge">{svc.category}</span>
+                    </div>
+                    <h3 className="service-name">{svc.title}</h3>
+                    <p className="service-desc">{svc.description}</p>
+                    <div className="service-features-list">
+                      {/* {svc.features.map((feat, idx) => (
                     <span className="service-feature-tag" key={idx}>
                       <span className="check-dot">✓</span> {feat}
                     </span>
                   ))} */}
-                </div>
-                <div className="service-card-footer">
-                  <button
-                    type="button"
-                    className="service-book-btn"
-                    onClick={() => selectServiceForInquiry(svc.title)}
-                  >
-                    Inquire for this Event <span>→</span>
-                  </button>
-                </div>
+                    </div>
+                    <div className="service-card-footer">
+                      <button
+                        type="button"
+                        className="service-book-btn"
+                        onClick={() => selectServiceForInquiry(svc.title)}
+                      >
+                        Inquire for this Event <span>→</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
+            </section>
 
-        {/* Section 4: CSR Impact & Social Initiatives */}
-        {/* <section id="csr" className="section-block csr-section">
+            {/* Section 4: CSR Impact & Social Initiatives */}
+            {/* <section id="csr" className="section-block csr-section">
           <div className="section-header">
             <p className="section-kicker">Social Impact & Field Storytelling</p>
             <h2 className="section-title">CSR & Community Documentary Projects</h2>
@@ -922,379 +1047,384 @@ function App() {
           </div>
         </section> */}
 
-        {/* Section 5: Customer Reviews & Client Stories */}
-        <section id="customers" className="section-block customers-section">
-          <div className="section-header">
-            <p className="section-kicker">Our Esteemed Clients</p>
-            <h2 className="section-title">Valued Clients & Organizations</h2>
-            <p className="section-subtitle">
-              Proud partners and visual chroniclers for premier institutions, enterprises, and sacred devasthanams.
-            </p>
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="customer-filter-bar">
-            <button
-              type="button"
-              className={`customer-filter-btn ${customerFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setCustomerFilter('all')}
-            >
-              All Clients ({customerReviewsData.length})
-            </button>
-            <button
-              type="button"
-              className={`customer-filter-btn ${customerFilter === 'institutions' ? 'active' : ''}`}
-              onClick={() => setCustomerFilter('institutions')}
-            >
-              🏫 Institutions & Corporates (3)
-            </button>
-            <button
-              type="button"
-              className={`customer-filter-btn ${customerFilter === 'temples' ? 'active' : ''}`}
-              onClick={() => setCustomerFilter('temples')}
-            >
-              🛕 Temples & Devasthanams (4)
-            </button>
-          </div>
-
-          <div className="customers-grid">
-            {customerReviewsData
-              .filter((client) => customerFilter === 'all' || client.category === customerFilter)
-              .map((client) => (
-                <div className="customer-card" key={client.id}>
-                  <div className="customer-avatar-wrap">
-                    <ClientAvatar
-                      src={client.image}
-                      alt={client.name}
-                      fallbackInitials={client.fallbackInitials}
-                    />
-                  </div>
-                  <div className="customer-meta">
-                    <h4 className="customer-name">{client.name}</h4>
-                  </div>
-                </div>
-              ))}
-          </div>
-
-          {/* Customer Image Upload / Story Banner */}
-          <div className="customer-cta-banner">
-            <div className="cta-banner-content">
-              <span className="cta-badge">🌟 Be In Our Spotlight</span>
-              <h3>Have We Photographed Your Celebration?</h3>
-              <p>
-                We love sharing client memories and customer photos! Send us your favorite captures or book your upcoming shoot to be featured on our wall of memories.
-              </p>
-            </div>
-            <div className="cta-banner-actions">
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={() => handleNavClick('contact')}
-              >
-                <span>Share Story / Book Shoot</span> <span className="btn-arrow">→</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 6: About Us */}
-        <section id="about" className="section-block about-section">
-          <div className="about-grid">
-            <div className="about-text-column">
-              <p className="section-kicker">About Anbudan Photos</p>
-              <h2 className="section-title">Passionate Storytellers Behind the Lens</h2>
-              <p className="about-lead">
-                With a deep reverence for tradition and an eye for contemporary aesthetics,
-                we specialize in capturing the raw emotions, rituals, and unforgettable joys of your celebrations.
-              </p>
-              <p className="about-body">
-                Founded with a mission to create heartfelt, archival-quality imagery, Anbudan Photos brings together
-                seasoned cinematographers, creative editors, and candid photographers. We don’t just take photographs;
-                we craft visual legacies that families cherish for a lifetime.
-              </p>
-
-              <div className="about-pillars">
-                <div className="pillar-item">
-                  <div className="pillar-bullet">01</div>
-                  <div>
-                    <h4>Unobtrusive Candid Mastery</h4>
-                    <p>We blend into your ceremonies naturally, capturing authentic smiles, tears of joy, and spontaneous laughs.</p>
-                  </div>
-                </div>
-                <div className="pillar-item">
-                  <div className="pillar-bullet">02</div>
-                  <div>
-                    <h4>Cinema-Grade Gear & Lighting</h4>
-                    <p>High-dynamic-range cameras, professional prime lenses, gimbal stabilization, and drone aerials for supreme clarity.</p>
-                  </div>
-                </div>
-                <div className="pillar-item">
-                  <div className="pillar-bullet">03</div>
-                  <div>
-                    <h4>Bespoke Heirloom Albums</h4>
-                    <p>Handcrafted, non-tearable velvet and matte photo albums designed to withstand the test of time.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="about-card-column">
-              <div className="about-highlight-card">
-                <span className="card-badge">Our Studio Promise</span>
-                <h3>Preserving Pure Emotion In Every Frame</h3>
-                <p>
-                  Whether it is the sacred stillness of a temple festival or the ecstatic energy of a wedding dance floor,
-                  we deliver an effortless and joyful photography experience.
+            {/* Section 5: Customer Reviews & Client Stories */}
+            <section id="customers" className="section-block customers-section">
+              <div className="section-header">
+                <p className="section-kicker">Our Esteemed Clients</p>
+                <h2 className="section-title">Valued Clients & Organizations</h2>
+                <p className="section-subtitle">
+                  Proud partners and visual chroniclers for premier institutions, enterprises, and sacred devasthanams.
                 </p>
-                <div className="studio-metrics-grid">
-                  <div className="metric-box">
-                    <strong>10+</strong>
-                    <span>Years Active</span>
-                  </div>
-                  <div className="metric-box">
-                    <strong>500+</strong>
-                    <span>Events Covered</span>
-                  </div>
-                  <div className="metric-box">
-                    <strong>150k+</strong>
-                    <span>Photos Delivered</span>
-                  </div>
-                  <div className="metric-box">
-                    <strong>100%</strong>
-                    <span>On-Time Delivery</span>
-                  </div>
-                </div>
-                <div className="about-card-cta">
-                  <button type="button" className="btn-primary full-width" onClick={() => handleNavClick('contact')}>
-                    Schedule a Consultation
-                  </button>
-                </div>
               </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Section 5: Contact Us */}
-        <section id="contact" className="section-block contact-section">
-          <div className="section-header">
-            <p className="section-kicker">Get In Touch</p>
-            <h2 className="section-title">Let’s Capture Your Next Celebration</h2>
-            <p className="section-subtitle">
-              Planning a wedding, family function, official corporate event, or temple celebration?
-              Share your details below and we’ll get back with a customized package.
-            </p>
-          </div>
-
-          <div className="contact-container">
-            <div className="contact-info-panel">
-              <div className="contact-card-info">
-                <h3>Studio Coordinates</h3>
-                <p className="contact-tagline">Available for local, regional, and destination assignments.</p>
-
-                <div className="contact-details-list">
-                  <div className="contact-item">
-                    <span className="contact-icon">📞</span>
-                    <div>
-                      <strong>Call / WhatsApp</strong>
-                      <p>
-                        <a href="tel:+919994499238" style={{ color: 'inherit', textDecoration: 'none' }}>+91 99944 99238</a>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="contact-item">
-                    <span className="contact-icon">✉️</span>
-                    <div>
-                      <strong>Email Inquiries</strong>
-                      <p>
-                        <a href="mailto:vashokphotos@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>vashokphotos@gmail.com</a>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="contact-item">
-                    <span className="contact-icon">📍</span>
-                    <div>
-                      <strong>Office Location</strong>
-                      <p>Anbudan Photos,  Coimbatore , Tamil Nadu</p>
-                    </div>
-                  </div>
-                  <div className="contact-item">
-                    <span className="contact-icon">🕒</span>
-                    <div>
-                      <strong>Working Hours</strong>
-                      <p>Monday – Sunday: 9:00 AM – 9:00 PM (IST)</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="contact-social-pills">
-                  <a
-                    href="https://www.instagram.com/anbudan_photos?utm_source=qr&stkn=MXJ2Y21ib2F4NHEyeA=="
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="social-pill instagram-pill"
-                    title="Follow Anbudan Photos on Instagram"
-                  >
-                    📸 Instagram
-                  </a>
-                  <a
-                    href="mailto:vashokphotos@gmail.com"
-                    className="social-pill email-pill"
-                    title="Email Anbudan Photos"
-                  >
-                    ✉️ vashokphotos@gmail.com
-                  </a>
-                  <a
-                    href="https://wa.me/919994499238?text=Hello%20Anbudan%20Photos,%20I%20would%20like%20to%20inquire%20about%20a%20photoshoot."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="social-pill whatsapp-pill"
-                    title="Chat on WhatsApp"
-                  >
-                    💬 WhatsApp (+91 99944 99238)
-                  </a>
-                </div>
+              {/* Category Filter Pills */}
+              <div className="customer-filter-bar">
+                <button
+                  type="button"
+                  className={`customer-filter-btn ${customerFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setCustomerFilter('all')}
+                >
+                  All Clients ({customerReviewsData.length})
+                </button>
+                <button
+                  type="button"
+                  className={`customer-filter-btn ${customerFilter === 'institutions' ? 'active' : ''}`}
+                  onClick={() => setCustomerFilter('institutions')}
+                >
+                  🏫 Institutions & Corporates (3)
+                </button>
+                <button
+                  type="button"
+                  className={`customer-filter-btn ${customerFilter === 'temples' ? 'active' : ''}`}
+                  onClick={() => setCustomerFilter('temples')}
+                >
+                  🛕 Temples & Devasthanams (4)
+                </button>
               </div>
-            </div>
 
-            <div className="contact-form-panel">
-              {contactSubmitted ? (
-                <div className="form-success-box" role="alert">
-                  <div className="success-icon">✓</div>
-                  <h3>Booking Inquiry Sent Automatically!</h3>
+              <div className="customers-grid">
+                {customerReviewsData
+                  .filter((client) => customerFilter === 'all' || client.category === customerFilter)
+                  .map((client) => (
+                    <div className="customer-card" key={client.id}>
+                      <div className="customer-avatar-wrap">
+                        <ClientAvatar
+                          src={client.image}
+                          alt={client.name}
+                          fallbackInitials={client.fallbackInitials}
+                        />
+                      </div>
+                      <div className="customer-meta">
+                        <h4 className="customer-name">{client.name}</h4>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Customer Image Upload / Story Banner */}
+              <div className="customer-cta-banner">
+                <div className="cta-banner-content">
+                  <span className="cta-badge">🌟 Be In Our Spotlight</span>
+                  <h3>Have We Photographed Your Celebration?</h3>
                   <p>
-                    Thank you, <strong>{submittedInquiry?.name}</strong>! Your inquiry for <strong>{submittedInquiry?.service}</strong> has been automatically emailed to <strong>vashokphotos@gmail.com</strong> and dispatched to studio WhatsApp (<strong>+91 99944 99238</strong>).
+                    We love sharing client memories and customer photos! Send us your favorite captures or book your upcoming shoot to be featured on our wall of memories.
                   </p>
-
-                  <div className="success-action-buttons">
-                    <a
-                      href={submittedInquiry?.whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-success-whatsapp"
-                    >
-                      💬 Re-open WhatsApp Chat
-                    </a>
-                    <a
-                      href={submittedInquiry?.mailtoUrl}
-                      className="btn-success-email"
-                    >
-                      ✉️ Email Copy: vashokphotos@gmail.com
-                    </a>
-                  </div>
-
+                </div>
+                <div className="cta-banner-actions">
                   <button
                     type="button"
-                    className="btn-send-another"
-                    onClick={() => {
-                      setContactSubmitted(false)
-                      setSubmittedInquiry(null)
-                      setContactData({
-                        name: '',
-                        phone: '',
-                        email: '',
-                        service: 'Weddings & Marriages',
-                        eventDate: '',
-                        message: '',
-                      })
-                    }}
+                    className="btn-primary"
+                    onClick={() => handleNavClick('contact')}
                   >
-                    ← Submit Another Inquiry
+                    <span>Share Story / Book Shoot</span> <span className="btn-arrow">→</span>
                   </button>
                 </div>
-              ) : (
-                <form className="contact-form" onSubmit={handleContactSubmit}>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="contact-name">Your Full Name *</label>
-                      <input
-                        type="text"
-                        id="contact-name"
-                        name="name"
-                        required
-                        placeholder="e.g. Anbudan"
-                        value={contactData.name}
-                        onChange={handleContactChange}
-                      />
+              </div>
+            </section>
+
+            {/* Section 6: About Us */}
+            <section id="about" className="section-block about-section">
+              <div className="about-grid">
+                <div className="about-text-column">
+                  <p className="section-kicker">ANBUDAN PHOTOS</p>
+                  <h2 className="section-title">Capturing Life. Preserving Love.</h2>
+                  <p className="about-lead">
+                    Where every photograph is captured with Anbudan — with love, warmth, and genuine emotion.
+                  </p>
+                  <p className="about-body">
+                    From sacred weddings and grand celebrations to cherished family milestones, birthdays, maternity journeys, and corporate occasions, Anbudan Photos transforms meaningful moments into timeless visual memories.
+                  </p>
+                  <p className="about-body" style={{ marginTop: '12px' }}>
+                    With an uncompromising eye for detail, emotion, and elegance, we preserve the moments that matter most — beautifully captured today, treasured for generations.
+                  </p>
+                  <p className="about-motto" style={{ marginTop: '18px', font: '600 13.5px var(--mono)', color: 'var(--accent-red)', letterSpacing: '0.04em' }}>
+                    With Love • With Emotion • With an Eye for Elegance
+                  </p>
+
+                  <div className="about-pillars">
+                    <div className="pillar-item">
+                      <div className="pillar-bullet">01</div>
+                      <div>
+                        <h4>Unobtrusive Candid Mastery</h4>
+                        <p>We blend into your ceremonies naturally, capturing authentic smiles, tears of joy, and spontaneous laughs.</p>
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="contact-phone">Phone Number (with WhatsApp) *</label>
-                      <input
-                        type="tel"
-                        id="contact-phone"
-                        name="phone"
-                        required
-                        placeholder="+91 98765 43210"
-                        value={contactData.phone}
-                        onChange={handleContactChange}
-                      />
+                    <div className="pillar-item">
+                      <div className="pillar-bullet">02</div>
+                      <div>
+                        <h4>Cinema-Grade Gear & Lighting</h4>
+                        <p>High-dynamic-range cameras, professional prime lenses, gimbal stabilization, and drone aerials for supreme clarity.</p>
+                      </div>
+                    </div>
+                    <div className="pillar-item">
+                      <div className="pillar-bullet">03</div>
+                      <div>
+                        <h4>Bespoke Heirloom Albums</h4>
+                        <p>Handcrafted, non-tearable velvet and matte photo albums designed to withstand the test of time.</p>
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="contact-email">Email Address *</label>
-                      <input
-                        type="email"
-                        id="contact-email"
-                        name="email"
-                        required
-                        placeholder="anbudan@example.com"
-                        value={contactData.email}
-                        onChange={handleContactChange}
-                      />
+                <div className="about-card-column">
+                  <div className="about-highlight-card">
+                    <span className="card-badge">Our Studio Promise</span>
+                    <h3>Preserving Pure Emotion In Every Frame</h3>
+                    <p>
+                      Whether it is the sacred stillness of a temple festival or the ecstatic energy of a wedding dance floor,
+                      we deliver an effortless and joyful photography experience.
+                    </p>
+                    <div className="studio-metrics-grid">
+                      <div className="metric-box">
+                        <strong>10+</strong>
+                        <span>Years Active</span>
+                      </div>
+                      <div className="metric-box">
+                        <strong>500+</strong>
+                        <span>Events Covered</span>
+                      </div>
+                      <div className="metric-box">
+                        <strong>150k+</strong>
+                        <span>Photos Delivered</span>
+                      </div>
+                      <div className="metric-box">
+                        <strong>100%</strong>
+                        <span>On-Time Delivery</span>
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="contact-service">Event / Service Type *</label>
-                      <select
-                        id="contact-service"
-                        name="service"
-                        value={contactData.service}
-                        onChange={handleContactChange}
+                    <div className="about-card-cta">
+                      <button type="button" className="btn-primary full-width" onClick={() => handleNavClick('contact')}>
+                        Schedule a Consultation
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 5: Contact Us */}
+            <section id="contact" className="section-block contact-section">
+              <div className="section-header">
+                <p className="section-kicker">Get In Touch</p>
+                <h2 className="section-title">Let’s Capture Your Next Celebration</h2>
+                <p className="section-subtitle">
+                  Planning a wedding, family function, official corporate event, or temple celebration?
+                  Share your details below and we’ll get back with a customized package.
+                </p>
+              </div>
+
+              <div className="contact-container">
+                <div className="contact-info-panel">
+                  <div className="contact-card-info">
+                    <h3>Studio Coordinates</h3>
+                    <p className="contact-tagline">Available for local, regional, and destination assignments.</p>
+
+                    <div className="contact-details-list">
+                      <div className="contact-item">
+                        <span className="contact-icon">📞</span>
+                        <div>
+                          <strong>Call / WhatsApp</strong>
+                          <p>
+                            <a href="tel:+919994499238" style={{ color: 'inherit', textDecoration: 'none' }}>+91 99944 99238</a>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="contact-item">
+                        <span className="contact-icon">✉️</span>
+                        <div>
+                          <strong>Email Inquiries</strong>
+                          <p>
+                            <a href="mailto:vashokphotos@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>vashokphotos@gmail.com</a>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="contact-item">
+                        <span className="contact-icon">📍</span>
+                        <div>
+                          <strong>Office Location</strong>
+                          <p>Anbudan Photos,  Coimbatore , Tamil Nadu</p>
+                        </div>
+                      </div>
+                      <div className="contact-item">
+                        <span className="contact-icon">🕒</span>
+                        <div>
+                          <strong>Working Hours</strong>
+                          <p>Monday – Sunday: 9:00 AM – 9:00 PM (IST)</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="contact-social-pills">
+                      <a
+                        href="https://www.instagram.com/anbudan_photos?utm_source=qr&stkn=MXJ2Y21ib2F4NHEyeA=="
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="social-pill instagram-pill"
+                        title="Follow Anbudan Photos on Instagram"
                       >
-                        {servicesData.map((svc) => (
-                          <option key={svc.id} value={svc.title}>{svc.title}</option>
-                        ))}
-                        <option value="Other Function">Other Family / Custom Event</option>
-                      </select>
+                        📸 Instagram
+                      </a>
+                      <a
+                        href="mailto:vashokphotos@gmail.com"
+                        className="social-pill email-pill"
+                        title="Email Anbudan Photos"
+                      >
+                        ✉️ vashokphotos@gmail.com
+                      </a>
+                      <a
+                        href="https://wa.me/919994499238?text=Hello%20Anbudan%20Photos,%20I%20would%20like%20to%20inquire%20about%20a%20photoshoot."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="social-pill whatsapp-pill"
+                        title="Chat on WhatsApp"
+                      >
+                        💬 WhatsApp (+91 99944 99238)
+                      </a>
                     </div>
                   </div>
+                </div>
 
-                  <div className="form-group">
-                    <label htmlFor="contact-date">Event Date (Tentative or Confirmed)</label>
-                    <input
-                      type="date"
-                      id="contact-date"
-                      name="eventDate"
-                      value={contactData.eventDate}
-                      onChange={handleContactChange}
-                    />
-                  </div>
+                <div className="contact-form-panel">
+                  {contactSubmitted ? (
+                    <div className="form-success-box" role="alert">
+                      <div className="success-icon">✓</div>
+                      <h3>Booking Inquiry Sent Automatically!</h3>
+                      <p>
+                        Thank you, <strong>{submittedInquiry?.name}</strong>! Your inquiry for <strong>{submittedInquiry?.service}</strong> has been automatically emailed to <strong>vashokphotos@gmail.com</strong> and dispatched to studio WhatsApp (<strong>+91 99944 99238</strong>).
+                      </p>
 
-                  <div className="form-group">
-                    <label htmlFor="contact-message">Tell Us About Your Event</label>
-                    <textarea
-                      id="contact-message"
-                      name="message"
-                      rows="4"
-                      placeholder="Location, estimated guest count, specific requirements or traditions to capture..."
-                      value={contactData.message}
-                      onChange={handleContactChange}
-                    ></textarea>
-                  </div>
+                      <div className="success-action-buttons">
+                        <a
+                          href={submittedInquiry?.whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-success-whatsapp"
+                        >
+                          💬 Re-open WhatsApp Chat
+                        </a>
+                        <a
+                          href={submittedInquiry?.mailtoUrl}
+                          className="btn-success-email"
+                        >
+                          ✉️ Email Copy: vashokphotos@gmail.com
+                        </a>
+                      </div>
 
-                  <button
-                    type="submit"
-                    className="btn-primary submit-btn"
-                    disabled={isSendingInquiry}
-                  >
-                    {isSendingInquiry ? 'Sending Inquiry... ⏳' : 'Send Booking Inquiry →'}
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        </section>
-      </main>
+                      <button
+                        type="button"
+                        className="btn-send-another"
+                        onClick={() => {
+                          setContactSubmitted(false)
+                          setSubmittedInquiry(null)
+                          setContactData({
+                            name: '',
+                            phone: '',
+                            email: '',
+                            service: 'Candid Photography',
+                            eventDate: '',
+                            message: '',
+                          })
+                        }}
+                      >
+                        ← Submit Another Inquiry
+                      </button>
+                    </div>
+                  ) : (
+                    <form className="contact-form" onSubmit={handleContactSubmit}>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label htmlFor="contact-name">Your Full Name *</label>
+                          <input
+                            type="text"
+                            id="contact-name"
+                            name="name"
+                            required
+                            placeholder="e.g. Anbudan"
+                            value={contactData.name}
+                            onChange={handleContactChange}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="contact-phone">Phone Number (with WhatsApp) *</label>
+                          <input
+                            type="tel"
+                            id="contact-phone"
+                            name="phone"
+                            required
+                            placeholder="+91 98765 43210"
+                            value={contactData.phone}
+                            onChange={handleContactChange}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label htmlFor="contact-email">Email Address *</label>
+                          <input
+                            type="email"
+                            id="contact-email"
+                            name="email"
+                            required
+                            placeholder="anbudan@example.com"
+                            value={contactData.email}
+                            onChange={handleContactChange}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="contact-service">Event / Service Type *</label>
+                          <select
+                            id="contact-service"
+                            name="service"
+                            value={contactData.service}
+                            onChange={handleContactChange}
+                          >
+                            {servicesData.map((svc) => (
+                              <option key={svc.id} value={svc.title}>{svc.title}</option>
+                            ))}
+                            <option value="Other Function">Other Family / Custom Event</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="contact-date">Event Date (Tentative or Confirmed)</label>
+                        <input
+                          type="date"
+                          id="contact-date"
+                          name="eventDate"
+                          value={contactData.eventDate}
+                          onChange={handleContactChange}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="contact-message">Tell Us About Your Event</label>
+                        <textarea
+                          id="contact-message"
+                          name="message"
+                          rows="4"
+                          placeholder="Location, estimated guest count, specific requirements or traditions to capture..."
+                          value={contactData.message}
+                          onChange={handleContactChange}
+                        ></textarea>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="btn-primary submit-btn"
+                        disabled={isSendingInquiry}
+                      >
+                        {isSendingInquiry ? 'Sending Inquiry... ⏳' : 'Send Booking Inquiry →'}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            </section>
+          </main>
+        </>
+      )}
 
       {/* Footer */}
       <footer className="site-footer">
@@ -1307,31 +1437,31 @@ function App() {
               <span className="brand-title">Anbudan Photos</span>
             </div>
             <p className="footer-desc">
-              Premier photography & cinematography studio preserving memories with devotion and artistry.
+              Capturing Life. Preserving Love. Where every photograph is captured with Anbudan — with love, warmth, and genuine emotion.
             </p>
           </div>
 
           <div className="footer-nav-col">
             <h4>Quick Navigation</h4>
             <ul>
-              <li><a href="#home" onClick={(e) => { e.preventDefault(); handleNavClick('home') }}>Home</a></li>
-              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Services</a></li>
-              <li><a href="#gallery" onClick={(e) => { e.preventDefault(); handleNavClick('gallery') }}>Client Gallery</a></li>
-              <li><a href="#csr" onClick={(e) => { e.preventDefault(); handleNavClick('csr') }}>CSR Projects</a></li>
-              <li><a href="#customers" onClick={(e) => { e.preventDefault(); handleNavClick('customers') }}>Customer Stories</a></li>
-              <li><a href="#about" onClick={(e) => { e.preventDefault(); handleNavClick('about') }}>About Studio</a></li>
-              <li><a href="#contact" onClick={(e) => { e.preventDefault(); handleNavClick('contact') }}>Contact & Bookings</a></li>
+              <li><a href="#home" onClick={(e) => { e.preventDefault(); navigateToView('home', 'home') }}>Home</a></li>
+              <li><a href="#portfolio" onClick={(e) => { e.preventDefault(); navigateToView('portfolio') }}>Portfolio</a></li>
+              <li><a href="#gallery" onClick={(e) => { e.preventDefault(); navigateToView('home', 'gallery') }}>Client Gallery</a></li>
+              <li><a href="#services" onClick={(e) => { e.preventDefault(); navigateToView('home', 'services') }}>Services</a></li>
+              <li><a href="#customers" onClick={(e) => { e.preventDefault(); navigateToView('home', 'customers') }}>Customer Stories</a></li>
+              <li><a href="#about" onClick={(e) => { e.preventDefault(); navigateToView('home', 'about') }}>About Studio</a></li>
+              <li><a href="#contact" onClick={(e) => { e.preventDefault(); navigateToView('home', 'contact') }}>Contact & Bookings</a></li>
             </ul>
           </div>
 
           <div className="footer-services-col">
             <h4>Featured Services</h4>
             <ul>
-              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Weddings & Marriages</a></li>
-              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Temple Functions & Festivals</a></li>
-              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Family Functions & Rituals</a></li>
-              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>CSR & Social Documentary</a></li>
-              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Cinematography & Live Stream</a></li>
+              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Candid Photography</a></li>
+              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Wedding Photography</a></li>
+              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Pre & Post-Wedding</a></li>
+              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Corporate Photography</a></li>
+              <li><a href="#services" onClick={(e) => { e.preventDefault(); handleNavClick('services') }}>Maternity & Birthday</a></li>
             </ul>
           </div>
         </div>
