@@ -629,6 +629,178 @@ a {
 }
 
 /* ==========================================================================
+   2.6 TOP CAROUSEL PHOTOGRAPHY LOADER ANIMATION
+   ========================================================================== */
+.top-carousel-loader-state {
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 40px 20px;
+}
+
+.top-carousel-loader-state::before {
+  content: '';
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 30, 40, 0.08) 0%, rgba(245, 158, 11, 0.05) 50%, transparent 70%);
+  filter: blur(50px);
+  pointer-events: none;
+  animation: aperturePulseGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes aperturePulseGlow {
+  0% { transform: scale(0.9); opacity: 0.5; }
+  100% { transform: scale(1.15); opacity: 0.9; }
+}
+
+.camera-aperture-loader {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aperture-ring-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0;
+  border-top-color: var(--accent-red);
+  border-right-color: #f59e0b;
+  animation: apertureSpin 2.4s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+.aperture-ring-inner {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  border: 2px dashed rgba(200, 30, 40, 0.45);
+  animation: apertureCounterSpin 3.6s linear infinite;
+}
+
+.aperture-lens-core {
+  position: relative;
+  z-index: 2;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+  animation: lensPulse 1.8s ease-in-out infinite alternate;
+}
+
+.aperture-flash-icon {
+  font-size: 24px;
+  line-height: 1;
+  display: inline-block;
+}
+
+.loader-text-wrap {
+  text-align: center;
+  max-width: 480px;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.loader-pill {
+  font: 700 11px var(--mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  background: rgba(200, 30, 40, 0.08);
+  border: 1px solid rgba(200, 30, 40, 0.2);
+  padding: 5px 14px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.loader-title {
+  margin: 0 0 8px;
+  font: 800 22px/1.2 var(--serif);
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.loader-subtitle {
+  margin: 0 0 20px;
+  font: 500 13px var(--mono);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loader-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: inline-block;
+  animation: pulseDot 1.5s infinite;
+}
+
+.loader-progress-track {
+  width: 220px;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.loader-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 45%;
+  background: linear-gradient(90deg, var(--accent-red), #f59e0b);
+  border-radius: 999px;
+  animation: progressSweep 1.6s ease-in-out infinite;
+}
+
+@keyframes apertureSpin {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes apertureCounterSpin {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes lensPulse {
+  0% { transform: scale(0.95); box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2); }
+  100% { transform: scale(1.05); box-shadow: 0 12px 28px rgba(200, 30, 40, 0.35); }
+}
+
+@keyframes progressSweep {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(120%) scaleX(1.4); }
+  100% { transform: translateX(300%); }
+}
+
+/* ==========================================================================
    3. HERO / HOME SECTION
    ========================================================================== */
 .hero-section {

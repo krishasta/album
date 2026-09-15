@@ -696,74 +696,97 @@ function App() {
       ) : (
         <>
           {/* Pure Photo Showcase Carousel (Edge-to-Edge & 100% Uncropped) */}
-          {heroGallery.length > 0 && (
-            <section
-              className="top-carousel-section"
-              aria-label="Featured Photography Reel"
-            >
-              <div className="top-carousel-wrapper">
-                <div className="top-carousel-track">
-                  {heroGallery.map((imgUrl, idx) => (
-                    <div
-                      key={imgUrl + idx}
-                      className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                    >
+          <section
+            className="top-carousel-section"
+            aria-label="Featured Photography Reel"
+          >
+            <div className="top-carousel-wrapper">
+              {heroGallery.length > 0 ? (
+                <>
+                  <div className="top-carousel-track">
+                    {heroGallery.map((imgUrl, idx) => (
                       <div
-                        className="top-carousel-slide-bg"
-                        style={{ backgroundImage: `url(${imgUrl})` }}
-                        aria-hidden="true"
-                      />
-                      <img
-                        src={imgUrl}
-                        alt={`Anbudan Photos showcase ${idx + 1}`}
-                        className="top-carousel-img"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Discrete Bottom Slide Dots */}
-                {heroGallery.length > 1 && (
-                  <div className="top-carousel-dots-bar">
-                    <div className="top-carousel-dots">
-                      {heroGallery.map((_, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                          onClick={() => setHeroPhotoIndex(idx)}
-                          aria-label={`Go to slide ${idx + 1}`}
+                        key={imgUrl + idx}
+                        className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                      >
+                        <div
+                          className="top-carousel-slide-bg"
+                          style={{ backgroundImage: `url(${imgUrl})` }}
+                          aria-hidden="true"
                         />
-                      ))}
+                        <img
+                          src={imgUrl}
+                          alt={`Anbudan Photos showcase ${idx + 1}`}
+                          className="top-carousel-img"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Discrete Bottom Slide Dots */}
+                  {heroGallery.length > 1 && (
+                    <div className="top-carousel-dots-bar">
+                      <div className="top-carousel-dots">
+                        {heroGallery.map((_, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                            onClick={() => setHeroPhotoIndex(idx)}
+                            aria-label={`Go to slide ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Subtle Navigation Chevrons */}
+                  {heroGallery.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        className="top-carousel-arrow prev"
+                        onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
+                        aria-label="Previous Slide"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        className="top-carousel-arrow next"
+                        onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
+                        aria-label="Next Slide"
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="top-carousel-loader-state">
+                  <div className="camera-aperture-loader">
+                    <div className="aperture-ring-outer"></div>
+                    <div className="aperture-ring-inner"></div>
+                    <div className="aperture-lens-core">
+                      <span className="aperture-flash-icon">📷</span>
                     </div>
                   </div>
-                )}
 
-                {/* Subtle Navigation Chevrons */}
-                {heroGallery.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      className="top-carousel-arrow prev"
-                      onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
-                      aria-label="Previous Slide"
-                    >
-                      ‹
-                    </button>
-                    <button
-                      type="button"
-                      className="top-carousel-arrow next"
-                      onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
-                      aria-label="Next Slide"
-                    >
-                      ›
-                    </button>
-                  </>
-                )}
-              </div>
-            </section>
-          )}
+                  <div className="loader-text-wrap">
+                    <span className="loader-pill">ANBUDAN PHOTOS</span>
+                    <h3 className="loader-title">Loading Curated Visual Gallery</h3>
+                    <p className="loader-subtitle">
+                      <span className="loader-pulse-dot"></span> Fetching high-resolution photo archives from Google Drive...
+                    </p>
+                    <div className="loader-progress-track">
+                      <div className="loader-progress-bar"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
 
           <main className="app-shell">
             {/* Background Ambient Light Orbs */}
