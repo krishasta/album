@@ -229,16 +229,139 @@ function ClientAvatar({ src, alt, fallbackInitials }) {
   )
 }
 
+function processDrivePayload(driveData) {
+  if (!driveData || typeof driveData !== 'object') return null
+  if (driveData.error) {
+    console.warn('Google Apps Script returned an error:', driveData.error)
+    return null
+  }
+
+  let portfolio = []
+  if (driveData.portfolio && Array.isArray(driveData.portfolio)) {
+    portfolio = driveData.portfolio
+  }
+
+  let heroPhotos = []
+  if (driveData.heroPhotos && Array.isArray(driveData.heroPhotos)) {
+    heroPhotos = driveData.heroPhotos
+      .map((p) => {
+        if (!p) return null
+        if (typeof p === 'string') return p
+        if (p.id) return `https://lh3.googleusercontent.com/d/${p.id}=w1600`
+        return p.url || ''
+      })
+      .filter(Boolean)
+  }
+
+  const rawList = Array.isArray(driveData)
+    ? driveData
+    : driveData.albums || driveData.data || driveData
+
+  let albums = []
+  if (Array.isArray(rawList)) {
+    albums = rawList.map((item, index) => {
+      const rawPhotos = item.photos || (Array.isArray(item) ? item : [])
+      const photoItems = (rawPhotos || [])
+        .map((photo) => {
+          if (!photo) return null
+          if (typeof photo === 'string') return { url: photo, name: '' }
+          if (photo.id) {
+            return {
+              id: photo.id,
+              url: `https://lh3.googleusercontent.com/d/${photo.id}=w1600`,
+              name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
+            }
+          }
+          return {
+            id: photo.id || '',
+            url: photo.url || '',
+            name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
+          }
+        })
+        .filter((p) => p && p.url)
+
+      const folderName = item.name || item.folderName || item.title || item.albumName || `Album ${index + 1}`
+      return {
+        name: folderName,
+        title: folderName,
+        style: (index % 10) + 1,
+        photos: photoItems,
+        cover: photoItems[0]?.url || item.cover || '',
+      }
+    })
+  } else {
+    const keys = Object.keys(rawList).filter((k) => k !== 'error' && k !== 'status' && k !== 'heroPhotos' && k !== 'portfolio')
+    if (keys.length > 0) {
+      albums = keys.map((folderKey, index) => {
+        const rawValue = rawList[folderKey]
+        const isObj = rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)
+        const rawPhotos = isObj ? rawValue.photos || [] : Array.isArray(rawValue) ? rawValue : []
+        const rawFolderName =
+          isObj && (rawValue.name || rawValue.folderName || rawValue.title || rawValue.albumName)
+            ? rawValue.name || rawValue.folderName || rawValue.title || rawValue.albumName
+            : folderKey
+
+        const photoItems = (rawPhotos || [])
+          .map((photo) => {
+            if (!photo) return null
+            if (typeof photo === 'string') return { url: photo, name: '' }
+            if (photo.id) {
+              return {
+                id: photo.id,
+                url: `https://lh3.googleusercontent.com/d/${photo.id}=w1600`,
+                name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
+              }
+            }
+            return {
+              id: photo.id || '',
+              url: photo.url || '',
+              name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
+            }
+          })
+          .filter((p) => p && p.url)
+
+        return {
+          name: rawFolderName,
+          title: rawFolderName,
+          style: (index % 10) + 1,
+          photos: photoItems,
+          cover: photoItems[0]?.url || (isObj ? rawValue.cover : '') || '',
+        }
+      })
+    }
+  }
+
+  return {
+    albums: albums.length > 0 ? albums : null,
+    portfolio,
+    heroPhotos,
+  }
+}
+
+function getInitialDriveData() {
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = window.localStorage.getItem(driveCacheKey)
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        return processDrivePayload(parsed)
+      }
+    } catch {}
+  }
+  return null
+}
+
 function App() {
+  const [initialCached] = useState(() => getInitialDriveData())
   const [currentView, setCurrentView] = useState(() =>
     typeof window !== 'undefined' && window.location.hash === '#portfolio' ? 'portfolio' : 'home'
   )
-  const [albums, setAlbums] = useState(initialAlbums)
-  const [drivePortfolio, setDrivePortfolio] = useState([])
-  const [heroPhotos, setHeroPhotos] = useState([])
+  const [albums, setAlbums] = useState(() => initialCached?.albums || initialAlbums)
+  const [drivePortfolio, setDrivePortfolio] = useState(() => initialCached?.portfolio || [])
+  const [heroPhotos, setHeroPhotos] = useState(() => initialCached?.heroPhotos || [])
   const [heroPhotoIndex, setHeroPhotoIndex] = useState(0)
   const [activeAlbum, setActiveAlbum] = useState(null)
-  const [driveStatus, setDriveStatus] = useState('loading')
+  const [driveStatus, setDriveStatus] = useState(() => (initialCached?.albums ? 'connected' : 'loading'))
   const [menuOpen, setMenuOpen] = useState(false)
   const [customerFilter, setCustomerFilter] = useState('all')
   const [contactSubmitted, setContactSubmitted] = useState(false)
@@ -268,144 +391,30 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
-  const processDriveData = (driveData) => {
-    if (!driveData || typeof driveData !== 'object') return null
-    if (driveData.error) {
-      console.warn('Google Apps Script returned an error:', driveData.error)
-      return null
-    }
-
-    // Extract Portfolio Stories if provided in response
-    if (driveData.portfolio && Array.isArray(driveData.portfolio)) {
-      setDrivePortfolio(driveData.portfolio)
-    }
-
-    // Extract Hero Photos if provided in response
-    if (driveData.heroPhotos && Array.isArray(driveData.heroPhotos)) {
-      const parsedHero = driveData.heroPhotos.map((p) => {
-        if (!p) return null
-        if (typeof p === 'string') return p
-        if (p.id) return `https://lh3.googleusercontent.com/d/${p.id}=w1600`
-        return p.url || ''
-      }).filter(Boolean)
-      if (parsedHero.length > 0) {
-        setHeroPhotos(parsedHero)
-      }
-    }
-
-    // Support direct array, or nested in { albums: [...] } or { data: [...] }
-    const rawList = Array.isArray(driveData)
-      ? driveData
-      : (driveData.albums || driveData.data || driveData)
-
-    // 1. If driveAlbums is an Array of albums
-    if (Array.isArray(rawList)) {
-      return rawList.map((item, index) => {
-        const rawPhotos = item.photos || (Array.isArray(item) ? item : [])
-        const photoItems = (rawPhotos || []).map((photo) => {
-          if (!photo) return null
-          if (typeof photo === 'string') return { url: photo, name: '' }
-          if (photo.id) {
-            return {
-              id: photo.id,
-              url: `https://lh3.googleusercontent.com/d/${photo.id}=w1600`,
-              name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
-            }
-          }
-          return {
-            id: photo.id || '',
-            url: photo.url || '',
-            name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
-          }
-        }).filter((p) => p && p.url)
-
-        // Exact folder name from Google Drive
-        const folderName = item.name || item.folderName || item.title || item.albumName || `Album ${index + 1}`
-        return {
-          name: folderName,
-          title: folderName,
-          style: (index % 10) + 1,
-          photos: photoItems,
-          cover: photoItems[0]?.url || item.cover || '',
-        }
-      })
-    }
-
-    // 2. If driveAlbums is an Object (folder names as keys: { "Wedding": [...], ... })
-    const keys = Object.keys(rawList).filter((k) => k !== 'error' && k !== 'status' && k !== 'heroPhotos')
-    if (keys.length === 0) return null
-
-    return keys.map((folderKey, index) => {
-      const rawValue = rawList[folderKey]
-      const isObj = rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)
-      const rawPhotos = isObj ? (rawValue.photos || []) : (Array.isArray(rawValue) ? rawValue : [])
-      const rawFolderName = (isObj && (rawValue.name || rawValue.folderName || rawValue.title || rawValue.albumName))
-        ? (rawValue.name || rawValue.folderName || rawValue.title || rawValue.albumName)
-        : folderKey
-
-      const photoItems = (rawPhotos || []).map((photo) => {
-        if (!photo) return null
-        if (typeof photo === 'string') return { url: photo, name: '' }
-        if (photo.id) {
-          return {
-            id: photo.id,
-            url: `https://lh3.googleusercontent.com/d/${photo.id}=w1600`,
-            name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
-          }
-        }
-        return {
-          id: photo.id || '',
-          url: photo.url || '',
-          name: photo.name ? photo.name.replace(/\.[^/.]+$/, '') : '',
-        }
-      }).filter((p) => p && p.url)
-
-      return {
-        name: rawFolderName,
-        title: rawFolderName,
-        style: (index % 10) + 1,
-        photos: photoItems,
-        cover: photoItems[0]?.url || (isObj ? rawValue.cover : '') || '',
-      }
-    })
-  }
-
   useEffect(() => {
     let cancelled = false
 
     const loadAlbums = async () => {
-      // 1. Try local cache first
-      const cached = window.localStorage.getItem(driveCacheKey)
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached)
-          const processed = processDriveData(parsed)
-          if (processed && processed.length > 0) {
-            if (!cancelled) {
-              setAlbums(processed)
-              setDriveStatus('connected')
-            }
-          }
-        } catch {
-          window.localStorage.removeItem(driveCacheKey)
-        }
-      }
-
-      // 2. Fetch fresh data from Google Apps Script
       try {
         const driveAlbums = await loadDriveAlbums()
         if (cancelled) return
 
         if (driveAlbums && typeof driveAlbums === 'object' && !driveAlbums.error) {
-          const processed = processDriveData(driveAlbums)
-          if (processed && processed.length > 0) {
-            setAlbums(processed)
+          const processed = processDrivePayload(driveAlbums)
+          if (processed && processed.albums && processed.albums.length > 0) {
+            setAlbums(processed.albums)
+            if (processed.portfolio && processed.portfolio.length > 0) {
+              setDrivePortfolio(processed.portfolio)
+            }
+            if (processed.heroPhotos && processed.heroPhotos.length > 0) {
+              setHeroPhotos(processed.heroPhotos)
+            }
             setDriveStatus('connected')
             window.localStorage.setItem(driveCacheKey, JSON.stringify(driveAlbums))
             return
           }
         }
-        setDriveStatus('fallback')
+        setDriveStatus((prev) => (prev !== 'connected' ? 'fallback' : prev))
       } catch (err) {
         console.error('Failed to load drive albums:', err)
         if (!cancelled) {
@@ -687,14 +696,14 @@ function App() {
       ) : (
         <>
           {/* Pure Photo Showcase Carousel (Edge-to-Edge & 100% Uncropped) */}
-          <section
-            className="top-carousel-section"
-            aria-label="Featured Photography Reel"
-          >
-            <div className="top-carousel-wrapper">
-              <div className="top-carousel-track">
-                {heroGallery.length > 0 ? (
-                  heroGallery.map((imgUrl, idx) => (
+          {heroGallery.length > 0 && (
+            <section
+              className="top-carousel-section"
+              aria-label="Featured Photography Reel"
+            >
+              <div className="top-carousel-wrapper">
+                <div className="top-carousel-track">
+                  {heroGallery.map((imgUrl, idx) => (
                     <div
                       key={imgUrl + idx}
                       className={`top-carousel-slide ${idx === heroPhotoIndex ? 'is-active' : ''}`}
@@ -711,63 +720,50 @@ function App() {
                         referrerPolicy="no-referrer"
                       />
                     </div>
-                  ))
-                ) : (
-                  <div className="top-carousel-slide is-active">
-                    <div
-                      className="top-carousel-slide-bg"
-                      style={{ backgroundImage: `url(/images/temple2.png)` }}
-                      aria-hidden="true"
-                    />
-                    <img
-                      src="/images/temple2.png"
-                      alt="Anbudan Photos showcase"
-                      className="top-carousel-img"
-                    />
+                  ))}
+                </div>
+
+                {/* Discrete Bottom Slide Dots */}
+                {heroGallery.length > 1 && (
+                  <div className="top-carousel-dots-bar">
+                    <div className="top-carousel-dots">
+                      {heroGallery.map((_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
+                          onClick={() => setHeroPhotoIndex(idx)}
+                          aria-label={`Go to slide ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
+
+                {/* Subtle Navigation Chevrons */}
+                {heroGallery.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      className="top-carousel-arrow prev"
+                      onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
+                      aria-label="Previous Slide"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      className="top-carousel-arrow next"
+                      onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
+                      aria-label="Next Slide"
+                    >
+                      ›
+                    </button>
+                  </>
+                )}
               </div>
-
-              {/* Discrete Bottom Slide Dots */}
-              {heroGallery.length > 1 && (
-                <div className="top-carousel-dots-bar">
-                  <div className="top-carousel-dots">
-                    {heroGallery.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className={`top-dot ${idx === heroPhotoIndex ? 'is-active' : ''}`}
-                        onClick={() => setHeroPhotoIndex(idx)}
-                        aria-label={`Go to slide ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Subtle Navigation Chevrons */}
-              {heroGallery.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    className="top-carousel-arrow prev"
-                    onClick={() => setHeroPhotoIndex((prev) => (prev - 1 + heroGallery.length) % heroGallery.length)}
-                    aria-label="Previous Slide"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    className="top-carousel-arrow next"
-                    onClick={() => setHeroPhotoIndex((prev) => (prev + 1) % heroGallery.length)}
-                    aria-label="Next Slide"
-                  >
-                    ›
-                  </button>
-                </>
-              )}
-            </div>
-          </section>
+            </section>
+          )}
 
           <main className="app-shell">
             {/* Background Ambient Light Orbs */}
