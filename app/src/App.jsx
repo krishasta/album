@@ -125,7 +125,7 @@ const customerReviewsData = [
   {
     id: 'school-1',
     category: 'institutions',
-    name: 'Gopal Naidu School',
+    name: 'Sri Gopal Naidu School',
     event: 'Annual Day Celebrations & Campus Events',
     location: 'Coimbatore, Tamil Nadu',
     rating: 5,

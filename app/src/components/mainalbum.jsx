@@ -1,21 +1,12 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
 function MainAlbum({ album, onClose }) {
   const [lightboxIndex, setLightboxIndex] = useState(null) // null when in grid, number when lightbox open
-  const [isSlideshow, setIsSlideshow] = useState(false)
   const [columnsCount, setColumnsCount] = useState(3) // 3 or 4 columns on desktop
-  const galleryRef = useRef(null)
 
   const photos = album.photos || []
   const totalPhotos = photos.length
   const albumTitle = album.name || album.title || 'Client Gallery'
-  const coverImage = album.cover || (photos[0] ? (typeof photos[0] === 'string' ? photos[0] : photos[0].url) : '')
-
-  const scrollToGallery = () => {
-    if (galleryRef.current) {
-      galleryRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
 
   // Lightbox Navigation
   const showNext = () => {
@@ -30,12 +21,10 @@ function MainAlbum({ album, onClose }) {
 
   const openLightbox = (index) => {
     setLightboxIndex(index)
-    setIsSlideshow(false)
   }
 
   const closeLightbox = () => {
     setLightboxIndex(null)
-    setIsSlideshow(false)
   }
 
   // Keyboard navigation
@@ -51,27 +40,12 @@ function MainAlbum({ album, onClose }) {
       if (lightboxIndex !== null) {
         if (e.key === 'ArrowRight') showNext()
         if (e.key === 'ArrowLeft') showPrevious()
-        if (e.key === ' ') {
-          e.preventDefault()
-          setIsSlideshow((prev) => !prev)
-        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [lightboxIndex, totalPhotos, onClose])
-
-  // Autoplay Slideshow
-  useEffect(() => {
-    if (!isSlideshow || lightboxIndex === null || totalPhotos <= 1) return
-
-    const interval = setInterval(() => {
-      setLightboxIndex((prev) => (prev + 1) % totalPhotos)
-    }, 3500)
-
-    return () => clearInterval(interval)
-  }, [isSlideshow, lightboxIndex, totalPhotos])
 
   // Lock body scroll when album view is open
   useEffect(() => {
@@ -86,66 +60,19 @@ function MainAlbum({ album, onClose }) {
 
   return (
     <div className="pixieset-album-page" role="dialog" aria-modal="true" aria-label={albumTitle}>
-      {/* 1. HERO COVER HEADER */}
-      <header className="pixieset-hero" style={{ backgroundImage: coverImage ? `url("${coverImage}")` : 'none' }}>
-        <div className="pixieset-hero-overlay"></div>
-        
-        {/* Top Floating Action Bar */}
-        <div className="pixieset-topbar">
-          <button className="pixieset-back-btn" onClick={onClose} type="button" aria-label="Back to all collections">
-            <span>←</span> Back to Collections
-          </button>
-          <div className="pixieset-brand">
-            <span className="pixieset-brand-title">ANBUDAN PHOTOS</span>
-          </div>
-          <button className="pixieset-close-btn" onClick={onClose} type="button" aria-label="Close album">
-            <span>✕</span>
-          </button>
-        </div>
-
-        {/* Hero Title & View Gallery CTA */}
-        <div className="pixieset-hero-center">
-          <p className="pixieset-hero-eyebrow">ANBUDAN PHOTOS <span>•</span> CLIENT GALLERY</p>
-          <h1 className="pixieset-hero-title">{albumTitle}</h1>
-          <p className="pixieset-hero-meta">{totalPhotos} Photographs</p>
-          <button className="pixieset-view-gallery-btn" onClick={scrollToGallery} type="button">
-            View Gallery <span className="btn-arrow">↓</span>
-          </button>
-        </div>
-
-        <div className="pixieset-hero-scroll-indicator" onClick={scrollToGallery} role="button" tabIndex={0}>
-          <span>SCROLL TO EXPLORE</span>
-          <div className="scroll-chevron"></div>
-        </div>
-      </header>
-
-      {/* 2. STICKY SUB-BAR */}
-      <nav className="pixieset-subnav" ref={galleryRef}>
+      {/* 1. STICKY ALBUM HEADER */}
+      <nav className="pixieset-subnav">
         <div className="pixieset-subnav-container">
           <div className="pixieset-subnav-left">
-            <button className="pixieset-subnav-back" onClick={onClose} type="button">
-              <span>←</span> All Albums
+            <button className="pixieset-subnav-back" onClick={onClose} type="button" aria-label="Back to all collections">
+              <span>←</span> All Collections
             </button>
             <div className="pixieset-subnav-divider"></div>
-            <h2 className="pixieset-subnav-title">{albumTitle}</h2>
+            <h1 className="pixieset-subnav-title">{albumTitle}</h1>
+            <span className="pixieset-photo-count-pill">{totalPhotos} Photos</span>
           </div>
 
           <div className="pixieset-subnav-right">
-            <span className="pixieset-photo-count-pill">{totalPhotos} Photos</span>
-            
-            {totalPhotos > 0 && (
-              <button 
-                className="pixieset-action-pill"
-                type="button" 
-                onClick={() => {
-                  setLightboxIndex(0)
-                  setIsSlideshow(true)
-                }}
-              >
-                <span>▶</span> Slideshow
-              </button>
-            )}
-
             <div className="pixieset-column-toggles">
               <button 
                 type="button" 
@@ -164,11 +91,15 @@ function MainAlbum({ album, onClose }) {
                 ||||
               </button>
             </div>
+
+            <button className="pixieset-nav-close-btn" onClick={onClose} type="button" aria-label="Close album">
+              ✕
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* 3. MASONRY PHOTO GRID */}
+      {/* 2. MASONRY PHOTO GRID - Direct View */}
       <main className="pixieset-gallery-container">
         {totalPhotos === 0 ? (
           <div className="pixieset-empty-state">
@@ -209,7 +140,7 @@ function MainAlbum({ album, onClose }) {
         )}
       </main>
 
-      {/* 4. FOOTER */}
+      {/* 3. FOOTER */}
       <footer className="pixieset-footer">
         <div className="pixieset-footer-brand">
           <h3>ANBUDAN PHOTOS</h3>
@@ -219,7 +150,10 @@ function MainAlbum({ album, onClose }) {
           <button 
             type="button" 
             className="pixieset-back-top-btn" 
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => {
+              const el = document.querySelector('.pixieset-album-page')
+              if (el) el.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
           >
             Back to Top ↑
           </button>
@@ -229,7 +163,7 @@ function MainAlbum({ album, onClose }) {
         </div>
       </footer>
 
-      {/* 5. FULLSCREEN LIGHTBOX / SLIDESHOW MODAL */}
+      {/* 4. FULLSCREEN LIGHTBOX MODAL */}
       {lightboxIndex !== null && (
         <div className="pixieset-lightbox-overlay" onClick={closeLightbox} role="dialog" aria-modal="true">
           <div className="pixieset-lightbox-container" onClick={(e) => e.stopPropagation()}>
@@ -245,14 +179,6 @@ function MainAlbum({ album, onClose }) {
               </div>
 
               <div className="lightbox-top-actions">
-                <button 
-                  className={`lightbox-tool-btn ${isSlideshow ? 'active' : ''}`}
-                  onClick={() => setIsSlideshow(!isSlideshow)} 
-                  type="button"
-                  title={isSlideshow ? 'Pause Slideshow' : 'Play Slideshow'}
-                >
-                  {isSlideshow ? '⏸ Pause' : '▶ Play'}
-                </button>
                 <button className="lightbox-close-icon-btn" onClick={closeLightbox} type="button" aria-label="Close Lightbox">
                   ✕
                 </button>
@@ -287,10 +213,7 @@ function MainAlbum({ album, onClose }) {
                     <button
                       key={idx}
                       className={`filmstrip-thumb ${idx === lightboxIndex ? 'is-active' : ''}`}
-                      onClick={() => {
-                        setLightboxIndex(idx)
-                        setIsSlideshow(false)
-                      }}
+                      onClick={() => setLightboxIndex(idx)}
                       type="button"
                       aria-label={`Jump to photo ${idx + 1}`}
                     >

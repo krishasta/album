@@ -267,11 +267,11 @@ export default function PortfolioPage({
                   {/* Top Badge: Category */}
                   <div className="story-badges-top">
                     <span className="story-cat-badge">{story.category}</span>
-                    {photoCount > 0 && (
+                    {/* {photoCount > 0 && (
                       <span className="story-count-badge">
                         📸 {photoCount} Photos
                       </span>
-                    )}
+                    )} */}
                   </div>
 
                   {/* Hover Overlay */}
